@@ -1,0 +1,22 @@
+apply plugin: 'java'
+
+dependencies {
+    compile group: 'org.jacoco', name: 'org.jacoco.core', version: '0.7.6.+'
+    compile group: 'org.jacoco', name: 'org.jacoco.report', version: '0.7.6.+'
+    compile group: 'org.yaml', name: 'snakeyaml', version: '1.17'
+    compile group: 'org.ow2.asm', name: 'asm', version: '5.0.4'
+}
+
+repositories {
+    mavenCentral()
+}
+
+/*
+jar {
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    manifest { attributes 'Main-Class': 'report.HighlightHTMLReportGenerator' }
+}*/
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
