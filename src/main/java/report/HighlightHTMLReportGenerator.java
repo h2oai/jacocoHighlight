@@ -158,7 +158,7 @@ public class HighlightHTMLReportGenerator {
                     params.parseParamsFile = root.resolve(args[i]).toFile();
                     break;
                 default:
-                    root = Paths.get(args[i]);
+                    root = Paths.get(args[i]).toAbsolutePath().normalize();
             }
             ++i;
         }
