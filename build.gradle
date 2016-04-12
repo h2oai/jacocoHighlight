@@ -1,7 +1,20 @@
 apply plugin: 'java'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
+
+buildscript {
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+    }
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
 
 dependencies {
     compile group: 'org.jacoco', name: 'org.jacoco.core', version: '0.7.6.+'
@@ -18,9 +31,9 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
 }
 
-/*shadowJar {
+shadowJar {
     mergeServiceFiles()
-    classifier = ''
+    classifier = 'app'
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.SF'
     manifest {
@@ -29,4 +42,4 @@ task wrapper(type: Wrapper) {
 }
 
 jar.finalizedBy shadowJar
-*/
+
