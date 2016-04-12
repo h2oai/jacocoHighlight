@@ -14,12 +14,19 @@ repositories {
     mavenCentral()
 }
 
-/*
-jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    manifest { attributes 'Main-Class': 'report.HighlightHTMLReportGenerator' }
-}*/
-
 task wrapper(type: Wrapper) {
     gradleVersion = '2.9'
 }
+
+/*shadowJar {
+    mergeServiceFiles()
+    classifier = ''
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.SF'
+    manifest {
+        attributes 'Main-Class': 'report.HighlightHTMLReportGenerator'
+    }
+}
+
+jar.finalizedBy shadowJar
+*/

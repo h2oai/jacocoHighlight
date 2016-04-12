@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import jacoco.report.internal.html.resources.HighlightResources;
 import jacoco.report.internal.html.table.HighlightTable;
 
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -138,7 +139,7 @@ public class HighlightHTMLFormatter extends HTMLFormatter {
     public IReportVisitor createVisitor(final IMultiReportOutput output)
             throws IOException {
         final ReportOutputFolder root = new ReportOutputFolder(output);
-        resources = new Resources(root);
+        resources = new HighlightResources(root);
         resources.copyResources();
         index = new ElementIndex(root);
         return new IReportVisitor() {

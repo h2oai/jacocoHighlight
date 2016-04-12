@@ -32,8 +32,6 @@ import org.jacoco.report.internal.html.table.Table;
  * Renderer for a table of {@link ITableItem}s.
  */
 public class HighlightTable extends Table {
-    private static final String PASS_COLOR = "#00FF00";
-    private static final String FAIL_COLOR = "#FF0000";
 
     private final List<Column> columns;
 
@@ -154,6 +152,8 @@ public class HighlightTable extends Table {
     }
 
     private static class Column {
+        private static final String PASS = "pass";
+        private static final String FAIL = "fail";
 
         private final ICoverageNode.CounterEntity entity;
         private final char idprefix;
@@ -192,10 +192,11 @@ public class HighlightTable extends Table {
                     final Resources resources, final ReportOutputFolder base)
                 throws IOException {
             if (visible) {
-                HTMLElement td = tr.td(style);
+                String td_class = style;
                 if (total instanceof IHighlightNode) {
-                    highlightTotal(td, (IHighlightNode) total);
+                    td_class += " " + highlightTotal((IHighlightNode) total);
                 }
+                HTMLElement td = tr.td(td_class);
                 renderer.footer(td, total, resources, base);
             }
         }
@@ -204,42 +205,43 @@ public class HighlightTable extends Table {
                   final Resources resources, final ReportOutputFolder base)
                 throws IOException {
             if (visible) {
-                final HTMLElement td = tr.td(style);
-                td.attr("id", idprefix + String.valueOf(index.getPosition(idx)));
+                String td_class = style;
                 ICoverageNode node = item.getNode();
                 if (node instanceof IHighlightNode) {
-                    highlightBody(td, (IHighlightNode) node);
+                    td_class += " " + highlightBody((IHighlightNode) node);
                 }
+                final HTMLElement td = tr.td(td_class);
+                td.attr("id", idprefix + String.valueOf(index.getPosition(idx)));
                 renderer.item(td, item, resources, base);
             }
         }
 
-        void highlightBody(HTMLElement td, IHighlightNode h) throws IOException {
-            String bg_color = FAIL_COLOR;
+        String highlightBody(IHighlightNode h) throws IOException {
+            String result = FAIL;
             if (entity == null) {
                 if (h.getHighlightResults().getFinalBodyResult()) {
-                    bg_color = PASS_COLOR;
+                    result = PASS;
                 }
             } else {
                 if (h.getHighlightResults().getEntityBodyResult(entity)) {
-                    bg_color = PASS_COLOR;
+                    result = PASS;
                 }
             }
-            td.attr("bgcolor", bg_color);
+            return result;
         }
 
-        void highlightTotal(HTMLElement td, IHighlightNode h) throws IOException {
-            String bg_color = FAIL_COLOR;
+        String highlightTotal(IHighlightNode h) throws IOException {
+            String result = FAIL;
             if (entity == null) {
                 if (h.getHighlightResults().getFinalTotalResult()) {
-                    bg_color = PASS_COLOR;
+                    result = PASS;
                 }
             } else {
                 if (h.getHighlightResults().getEntityTotalResult(entity)) {
-                    bg_color = PASS_COLOR;
+                    result = PASS;
                 }
             }
-            td.attr("bgcolor", bg_color);
+            return result;
         }
 
     }
