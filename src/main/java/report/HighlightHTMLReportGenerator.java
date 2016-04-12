@@ -127,7 +127,7 @@ public class HighlightHTMLReportGenerator {
     private static HighlightHTMLReportParams parseArgs(final String[] args) {
         int i = 0;
         HighlightHTMLReportParams params = new HighlightHTMLReportParams();
-        Path root = Paths.get(".");
+        Path root = Paths.get(System.getProperty("user.dir"));
         while (i < args.length) {
             switch(args[i]) {
                 case "-o":
