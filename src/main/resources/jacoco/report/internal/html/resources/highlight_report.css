@@ -243,9 +243,9 @@ table.coverage tfoot td.ctr2 {
 }
 
 .pass {
-    background-color: green;
+    background-color: #99ff99;
 }
 
 .fail {
-    background-color: red;
+    background-color: #ff9999;
 }
