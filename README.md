@@ -1,4 +1,5 @@
 # jacocoHighlight
+**_[Note: This is a work in progress. API is subject to change.]_**
 This is a wrapper of [JaCoCo](http://eclemma.org/jacoco/ "JaCoCo") that expands on its functionalities in making HTML reports. Specifically, it allows for the highlighting of cells to indicate a pass or fail.
 
 [Example](http://htmlpreview.github.io/?https://github.com/nkalonia1/jacocoHighlight/master/example_report/index.html "JaCoCo Example")
@@ -11,5 +12,15 @@ To clarify: For a package to be marked as passing, *every* class it contains nee
 JaCoCo version 0.7.6 is required.
 
 ## Usage
+### Command Line
+`java -jar path_to_jar [root_dir] [-o out_dir] [-e exec_files] [-c class_files] [-s source_roots] [-p params_file]`
 
+| --- | --- | --- |
+| Variable | Usage | Default |
+| `root_dir` | Working directory | `.` |
+| `out_dir` | Directory to output HTML report in respect to `root_dir` | `report` |
+| `exec_files` | Path to `.exec` files in respect to `root_dir` _(accepts glob patterns)_ | `*.exec` |
+| `class_files` | Path to class files in respect to `root_dir` _(accepts glob patterns)_ | `**/classes` |
+| `source_roots` | Path to the root directories of source files in respect to `root_dir` _(accepts glob patterns)_ | `**/src/main/java` |
+| `params_file` | Path to a parameter file in respect to `root_dir` | `null` |
 
