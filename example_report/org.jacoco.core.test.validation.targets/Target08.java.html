@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Target08.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.test.validation.targets</a> &gt; <span class="el_source">Target08.java</span></div><h1>Target08.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.test.validation.targets;
+
+/**
+ * This test target has instance members with implicit initializers.
+ */
+<span class="nc" id="L17">public class Target08 { // $line-classdef$</span>
+
+	Object field1; // $line-field1$
+
+<span class="nc" id="L21">	Object field2 = this; // $line-field2$</span>
+
+	int field3; // $line-field3$
+
+<span class="nc" id="L25">	int field4 = 2000; // $line-field4$</span>
+
+	public static void main(String[] args) {
+<span class="nc" id="L28">		new Target08();</span>
+<span class="nc" id="L29">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CounterColumnTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.table</a> &gt; <span class="el_source">CounterColumnTest.java</span></div><h1>CounterColumnTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.table;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Locale;
+
+import org.jacoco.core.analysis.CoverageNodeImpl;
+import org.jacoco.core.analysis.ICoverageNode;
+import org.jacoco.core.analysis.ICoverageNode.CounterEntity;
+import org.jacoco.core.analysis.ICoverageNode.ElementType;
+import org.jacoco.core.internal.analysis.CounterImpl;
+import org.jacoco.report.MemoryMultiReportOutput;
+import org.jacoco.report.internal.ReportOutputFolder;
+import org.jacoco.report.internal.html.HTMLDocument;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.jacoco.report.internal.html.HTMLSupport;
+import org.jacoco.report.internal.html.resources.Resources;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link CounterColumn}.
+ */
+<span class="fc" id="L43">public class CounterColumnTest {</span>
+
+	private MemoryMultiReportOutput output;
+
+	private ReportOutputFolder root;
+
+	private Resources resources;
+
+	private HTMLDocument doc;
+
+	private HTMLElement td;
+
+	private HTMLSupport support;
+
+	private Locale locale;
+
+	@Before
+	public void setup() throws Exception {
+<span class="fc" id="L61">		output = new MemoryMultiReportOutput();</span>
+<span class="fc" id="L62">		root = new ReportOutputFolder(output);</span>
+<span class="fc" id="L63">		resources = new Resources(root);</span>
+<span class="fc" id="L64">		doc = new HTMLDocument(root.createFile(&quot;Test.html&quot;), &quot;UTF-8&quot;);</span>
+<span class="fc" id="L65">		doc.head().title();</span>
+<span class="fc" id="L66">		td = doc.body().table(&quot;somestyle&quot;).tr().td();</span>
+<span class="fc" id="L67">		support = new HTMLSupport();</span>
+<span class="fc" id="L68">		locale = Locale.ENGLISH;</span>
+<span class="fc" id="L69">	}</span>
+
+	@After
+	public void teardown() throws IOException {
+<span class="fc" id="L73">		output.close();</span>
+<span class="fc" id="L74">		output.assertAllClosed();</span>
+<span class="fc" id="L75">	}</span>
+
+	@Test
+	public void testInitVisible() throws Exception {
+<span class="fc" id="L79">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L81">		final ITableItem item = createItem(0, 3);</span>
+<span class="fc" id="L82">		assertTrue(column.init(Arrays.asList(item), item.getNode()));</span>
+<span class="fc" id="L83">		doc.close();</span>
+<span class="fc" id="L84">	}</span>
+
+	@Test
+	public void testInitInvisible() throws Exception {
+<span class="fc" id="L88">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L90">		final ITableItem item = createItem(0, 0);</span>
+<span class="fc" id="L91">		assertFalse(column.init(Arrays.asList(item), createNode(1, 0)));</span>
+<span class="fc" id="L92">		doc.close();</span>
+<span class="fc" id="L93">	}</span>
+
+	@Test
+	public void testItemTotal() throws Exception {
+<span class="fc" id="L97">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L99">		final ITableItem item = createItem(100, 50);</span>
+<span class="fc" id="L100">		column.init(Collections.singletonList(item), item.getNode());</span>
+<span class="fc" id="L101">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L102">		doc.close();</span>
+<span class="fc" id="L103">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L104">		assertEquals(&quot;150&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L106">	}</span>
+
+	@Test
+	public void testItemMissed() throws Exception {
+<span class="fc" id="L110">		IColumnRenderer column = CounterColumn.newMissed(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L112">		final ITableItem item = createItem(100, 50);</span>
+<span class="fc" id="L113">		column.init(Collections.singletonList(item), item.getNode());</span>
+<span class="fc" id="L114">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L115">		doc.close();</span>
+<span class="fc" id="L116">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L117">		assertEquals(&quot;100&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L119">	}</span>
+
+	@Test
+	public void testItemCovered() throws Exception {
+<span class="fc" id="L123">		IColumnRenderer column = CounterColumn.newCovered(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L125">		final ITableItem item = createItem(100, 50);</span>
+<span class="fc" id="L126">		column.init(Collections.singletonList(item), item.getNode());</span>
+<span class="fc" id="L127">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L128">		doc.close();</span>
+<span class="fc" id="L129">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L130">		assertEquals(&quot;50&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L132">	}</span>
+
+	@Test
+	public void testLocale() throws Exception {
+<span class="fc" id="L136">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				Locale.ITALIAN);
+<span class="fc" id="L138">		final ITableItem item = createItem(1000, 0);</span>
+<span class="fc" id="L139">		column.init(Collections.singletonList(item), item.getNode());</span>
+<span class="fc" id="L140">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L141">		doc.close();</span>
+<span class="fc" id="L142">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L143">		assertEquals(&quot;1.000&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L145">	}</span>
+
+	@Test
+	public void testFooter() throws Exception {
+<span class="fc" id="L149">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L151">		final ITableItem item = createItem(20, 60);</span>
+<span class="fc" id="L152">		column.init(Collections.singletonList(item), item.getNode());</span>
+<span class="fc" id="L153">		column.footer(td, item.getNode(), resources, root);</span>
+<span class="fc" id="L154">		doc.close();</span>
+<span class="fc" id="L155">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L156">		assertEquals(&quot;80&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L158">	}</span>
+
+	@Test
+	public void testComparatorTotal() throws Exception {
+<span class="fc" id="L162">		IColumnRenderer column = CounterColumn.newTotal(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L164">		final Comparator&lt;ITableItem&gt; c = column.getComparator();</span>
+<span class="fc" id="L165">		final ITableItem i1 = createItem(30, 0);</span>
+<span class="fc" id="L166">		final ITableItem i2 = createItem(40, 0);</span>
+<span class="fc" id="L167">		assertEquals(0, c.compare(i1, i1));</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">		assertTrue(c.compare(i1, i2) &gt; 0);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">		assertTrue(c.compare(i2, i1) &lt; 0);</span>
+<span class="fc" id="L170">		doc.close();</span>
+<span class="fc" id="L171">	}</span>
+
+	@Test
+	public void testComparatorCovered() throws Exception {
+<span class="fc" id="L175">		IColumnRenderer column = CounterColumn.newCovered(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L177">		final Comparator&lt;ITableItem&gt; c = column.getComparator();</span>
+<span class="fc" id="L178">		final ITableItem i1 = createItem(70, 30);</span>
+<span class="fc" id="L179">		final ITableItem i2 = createItem(50, 50);</span>
+<span class="fc" id="L180">		assertEquals(0, c.compare(i1, i1));</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">		assertTrue(c.compare(i1, i2) &gt; 0);</span>
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">		assertTrue(c.compare(i2, i1) &lt; 0);</span>
+<span class="fc" id="L183">		doc.close();</span>
+<span class="fc" id="L184">	}</span>
+
+	@Test
+	public void testComparatorMissed() throws Exception {
+<span class="fc" id="L188">		IColumnRenderer column = CounterColumn.newMissed(CounterEntity.LINE,</span>
+				locale);
+<span class="fc" id="L190">		final Comparator&lt;ITableItem&gt; c = column.getComparator();</span>
+<span class="fc" id="L191">		final ITableItem i1 = createItem(20, 80);</span>
+<span class="fc" id="L192">		final ITableItem i2 = createItem(50, 50);</span>
+<span class="fc" id="L193">		assertEquals(0, c.compare(i1, i1));</span>
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">		assertTrue(c.compare(i1, i2) &gt; 0);</span>
+<span class="pc bpc" id="L195" title="1 of 2 branches missed.">		assertTrue(c.compare(i2, i1) &lt; 0);</span>
+<span class="fc" id="L196">		doc.close();</span>
+<span class="fc" id="L197">	}</span>
+
+	private ITableItem createItem(final int missed, final int covered) {
+<span class="fc" id="L200">		final ICoverageNode node = createNode(missed, covered);</span>
+<span class="fc" id="L201">		return new ITableItem() {</span>
+			public String getLinkLabel() {
+<span class="nc" id="L203">				return &quot;Foo&quot;;</span>
+			}
+
+			public String getLink(ReportOutputFolder base) {
+<span class="nc" id="L207">				return null;</span>
+			}
+
+			public String getLinkStyle() {
+<span class="nc" id="L211">				return Resources.getElementStyle(node.getElementType());</span>
+			}
+
+			public ICoverageNode getNode() {
+<span class="fc" id="L215">				return node;</span>
+			}
+		};
+	}
+
+	private CoverageNodeImpl createNode(final int missed, final int covered) {
+<span class="fc" id="L221">		return new CoverageNodeImpl(ElementType.GROUP, &quot;Foo&quot;) {</span>
+			{
+<span class="fc" id="L223">				this.lineCounter = CounterImpl.getInstance(missed, covered);</span>
+<span class="fc" id="L224">			}</span>
+		};
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

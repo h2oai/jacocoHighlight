@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SourceFileCoverageImplTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.analysis</a> &gt; <span class="el_source">SourceFileCoverageImplTest.java</span></div><h1>SourceFileCoverageImplTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.analysis;
+
+import static org.jacoco.core.analysis.ICoverageNode.ElementType.SOURCEFILE;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+/**
+ * Unit test for {@link SourceFileCoverageImpl}.
+ */
+<span class="fc" id="L22">public class SourceFileCoverageImplTest {</span>
+
+	@Test
+	public void testProperties() {
+<span class="fc" id="L26">		SourceFileCoverageImpl data = new SourceFileCoverageImpl(&quot;Sample.java&quot;,</span>
+				&quot;org/jacoco/examples&quot;);
+<span class="fc" id="L28">		assertEquals(SOURCEFILE, data.getElementType());</span>
+<span class="fc" id="L29">		assertEquals(&quot;org/jacoco/examples&quot;, data.getPackageName());</span>
+<span class="fc" id="L30">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

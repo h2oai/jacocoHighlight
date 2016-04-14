@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>LabelInfoTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.flow</a> &gt; <span class="el_source">LabelInfoTest.java</span></div><h1>LabelInfoTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.flow;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.Label;
+
+/**
+ * Unit tests for {@link LabelInfoTest}.
+ */
+<span class="fc" id="L27">public class LabelInfoTest {</span>
+
+	private Label label;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L33">		label = new Label();</span>
+<span class="fc" id="L34">	}</span>
+
+	@Test
+	public void testDefaults() {
+<span class="fc" id="L38">		assertFalse(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L39">		assertFalse(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L40">		assertFalse(LabelInfo.isMethodInvocationLine(label));</span>
+<span class="fc" id="L41">		assertFalse(LabelInfo.isDone(label));</span>
+<span class="fc" id="L42">		assertEquals(LabelInfo.NO_PROBE, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L43">		assertNull(LabelInfo.getIntermediateLabel(label));</span>
+<span class="fc" id="L44">		assertNull(LabelInfo.getInstruction(label));</span>
+<span class="fc" id="L45">	}</span>
+
+	@Test
+	public void testOtherInfoObject() {
+<span class="fc" id="L49">		label.info = new Object();</span>
+<span class="fc" id="L50">		assertFalse(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L51">	}</span>
+
+	@Test
+	public void testSuccessor() {
+<span class="fc" id="L55">		LabelInfo.setSuccessor(label);</span>
+<span class="fc" id="L56">		assertFalse(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L57">		assertTrue(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L58">	}</span>
+
+	@Test
+	public void testMultiTarget1() {
+<span class="fc" id="L62">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L63">		assertFalse(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L64">		assertFalse(LabelInfo.isSuccessor(label));</span>
+
+<span class="fc" id="L66">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L67">		assertTrue(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L68">		assertFalse(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L69">	}</span>
+
+	@Test
+	public void testMultiTarget2() {
+<span class="fc" id="L73">		LabelInfo.setSuccessor(label);</span>
+<span class="fc" id="L74">		assertFalse(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L75">		assertTrue(LabelInfo.isSuccessor(label));</span>
+
+<span class="fc" id="L77">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L78">		assertTrue(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L79">		assertTrue(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L80">	}</span>
+
+	@Test
+	public void testMultiTarget3() {
+<span class="fc" id="L84">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L85">		assertFalse(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L86">		assertFalse(LabelInfo.isSuccessor(label));</span>
+
+<span class="fc" id="L88">		LabelInfo.setSuccessor(label);</span>
+<span class="fc" id="L89">		assertTrue(LabelInfo.isMultiTarget(label));</span>
+<span class="fc" id="L90">		assertTrue(LabelInfo.isSuccessor(label));</span>
+<span class="fc" id="L91">	}</span>
+
+	@Test
+	public void testMethodInvocationLine() {
+<span class="fc" id="L95">		LabelInfo.setMethodInvocationLine(label);</span>
+<span class="fc" id="L96">		assertTrue(LabelInfo.isMethodInvocationLine(label));</span>
+<span class="fc" id="L97">	}</span>
+
+	@Test
+	public void testNeedsProbe() {
+<span class="fc" id="L101">		testNeedsProbe(false, false, false, false);</span>
+<span class="fc" id="L102">		testNeedsProbe(true, false, false, false);</span>
+<span class="fc" id="L103">		testNeedsProbe(false, true, false, false);</span>
+<span class="fc" id="L104">		testNeedsProbe(true, true, false, false);</span>
+<span class="fc" id="L105">		testNeedsProbe(false, false, true, false);</span>
+<span class="fc" id="L106">		testNeedsProbe(true, false, true, true);</span>
+<span class="fc" id="L107">		testNeedsProbe(false, true, true, true);</span>
+<span class="fc" id="L108">		testNeedsProbe(true, true, true, true);</span>
+<span class="fc" id="L109">	}</span>
+
+	private void testNeedsProbe(boolean multitarget,
+			boolean methodinvocationline, boolean successor, boolean expected) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">		if (multitarget) {</span>
+<span class="fc" id="L114">			LabelInfo.setTarget(label);</span>
+<span class="fc" id="L115">			LabelInfo.setTarget(label);</span>
+		}
+<span class="fc bfc" id="L117" title="All 2 branches covered.">		if (methodinvocationline) {</span>
+<span class="fc" id="L118">			LabelInfo.setMethodInvocationLine(label);</span>
+		}
+<span class="fc bfc" id="L120" title="All 2 branches covered.">		if (successor) {</span>
+<span class="fc" id="L121">			LabelInfo.setSuccessor(label);</span>
+		}
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">		assertTrue(expected == LabelInfo.needsProbe(label));</span>
+
+		// Reset:
+<span class="fc" id="L126">		label = new Label();</span>
+<span class="fc" id="L127">	}</span>
+
+	@Test
+	public void testSetResetDone1() {
+<span class="fc" id="L131">		LabelInfo.setDone(label);</span>
+<span class="fc" id="L132">		assertTrue(LabelInfo.isDone(label));</span>
+
+<span class="fc" id="L134">		LabelInfo.resetDone(label);</span>
+<span class="fc" id="L135">		assertFalse(LabelInfo.isDone(label));</span>
+<span class="fc" id="L136">	}</span>
+
+	@Test
+	public void testSetResetDone2() {
+<span class="fc" id="L140">		LabelInfo.setDone(label);</span>
+<span class="fc" id="L141">		assertTrue(LabelInfo.isDone(label));</span>
+
+<span class="fc" id="L143">		LabelInfo.resetDone(new Label[] { label, new Label() });</span>
+<span class="fc" id="L144">		assertFalse(LabelInfo.isDone(label));</span>
+<span class="fc" id="L145">	}</span>
+
+	@Test
+	public void testSetProbeId() {
+<span class="fc" id="L149">		LabelInfo.setProbeId(label, 123);</span>
+<span class="fc" id="L150">		assertEquals(123, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L151">	}</span>
+
+	@Test
+	public void testSetIntermediateLabel() {
+<span class="fc" id="L155">		final Label i = new Label();</span>
+<span class="fc" id="L156">		LabelInfo.setIntermediateLabel(label, i);</span>
+<span class="fc" id="L157">		assertSame(i, LabelInfo.getIntermediateLabel(label));</span>
+<span class="fc" id="L158">	}</span>
+
+	@Test
+	public void testSetInstruction() {
+<span class="fc" id="L162">		final Instruction instruction = new Instruction(123);</span>
+<span class="fc" id="L163">		LabelInfo.setInstruction(label, instruction);</span>
+<span class="fc" id="L164">		assertSame(instruction, LabelInfo.getInstruction(label));</span>
+<span class="fc" id="L165">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

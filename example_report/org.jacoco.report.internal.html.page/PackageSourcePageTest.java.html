@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PackageSourcePageTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.page</a> &gt; <span class="el_source">PackageSourcePageTest.java</span></div><h1>PackageSourcePageTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.page;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.Collections;
+
+import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.analysis.ISourceFileCoverage;
+import org.jacoco.core.internal.analysis.PackageCoverageImpl;
+import org.jacoco.core.internal.analysis.SourceFileCoverageImpl;
+import org.jacoco.report.ISourceFileLocator;
+import org.jacoco.report.internal.ReportOutputFolder;
+import org.jacoco.report.internal.html.ILinkable;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link PackageSourcePage}.
+ */
+<span class="fc" id="L39">public class PackageSourcePageTest extends PageTestBase {</span>
+
+	private PackageCoverageImpl node;
+	private ISourceFileLocator sourceLocator;
+	private ILinkable packagePageLink;
+
+	private PackageSourcePage page;
+
+	@Before
+	@Override
+	public void setup() throws Exception {
+<span class="fc" id="L50">		super.setup();</span>
+<span class="fc" id="L51">		ISourceFileCoverage src1 = new SourceFileCoverageImpl(&quot;Src1.java&quot;,</span>
+				&quot;org/jacoco/example&quot;);
+<span class="fc" id="L53">		ISourceFileCoverage src2 = new SourceFileCoverageImpl(&quot;Src2.java&quot;,</span>
+				&quot;org/jacoco/example&quot;);
+<span class="fc" id="L55">		node = new PackageCoverageImpl(&quot;org/jacoco/example&quot;,</span>
+				Collections.&lt;IClassCoverage&gt; emptyList(), Arrays.asList(src1,
+						src2));
+<span class="fc" id="L58">		sourceLocator = new ISourceFileLocator() {</span>
+
+			public int getTabWidth() {
+<span class="fc" id="L61">				return 4;</span>
+			}
+
+			public Reader getSourceFile(String packageName, String fileName)
+					throws IOException {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">				return fileName.equals(&quot;Src1.java&quot;) ? new StringReader(&quot;&quot;)</span>
+						: null;
+			}
+		};
+<span class="fc" id="L70">		packagePageLink = new ILinkable() {</span>
+
+			public String getLinkStyle() {
+<span class="nc" id="L73">				fail();</span>
+<span class="nc" id="L74">				return null;</span>
+			}
+
+			public String getLinkLabel() {
+<span class="nc" id="L78">				fail();</span>
+<span class="nc" id="L79">				return null;</span>
+			}
+
+			public String getLink(ReportOutputFolder base) {
+<span class="fc" id="L83">				return &quot;index.html&quot;;</span>
+			}
+		};
+<span class="fc" id="L86">	}</span>
+
+	@Test
+	public void testContents() throws Exception {
+<span class="fc" id="L90">		page = new PackageSourcePage(node, null, sourceLocator, rootFolder,</span>
+				context, packagePageLink);
+<span class="fc" id="L92">		page.render();</span>
+
+<span class="fc" id="L94">		final Document doc = support.parse(output.getFile(&quot;index.source.html&quot;));</span>
+<span class="fc" id="L95">		assertEquals(&quot;index.html&quot;,</span>
+				support.findStr(doc, &quot;/html/body/div[1]/span[1]/a/@href&quot;));
+<span class="fc" id="L97">		assertEquals(&quot;el_class&quot;,</span>
+				support.findStr(doc, &quot;/html/body/div[1]/span[1]/a/@class&quot;));
+<span class="fc" id="L99">		assertEquals(&quot;Classes&quot;,</span>
+				support.findStr(doc, &quot;/html/body/div[1]/span[1]/a&quot;));
+<span class="fc" id="L101">		assertEquals(&quot;el_source&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[1]/a/@class&quot;));
+<span class="fc" id="L103">		assertEquals(&quot;Src1.java&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[1]/td[1]/a&quot;));
+<span class="fc" id="L105">		assertEquals(&quot;el_source&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[2]/td[1]/span/@class&quot;));
+<span class="fc" id="L107">		assertEquals(&quot;Src2.java&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[2]/td[1]/span&quot;));
+<span class="fc" id="L109">	}</span>
+
+	@Test
+	public void testGetSourceFilePages() throws Exception {
+<span class="fc" id="L113">		page = new PackageSourcePage(node, null, sourceLocator, rootFolder,</span>
+				context, packagePageLink);
+<span class="fc" id="L115">		page.render();</span>
+
+<span class="fc" id="L117">		assertNotNull(page.getSourceFilePage(&quot;Src1.java&quot;));</span>
+<span class="fc" id="L118">		assertNull(page.getSourceFilePage(&quot;Src2.java&quot;));</span>
+<span class="fc" id="L119">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

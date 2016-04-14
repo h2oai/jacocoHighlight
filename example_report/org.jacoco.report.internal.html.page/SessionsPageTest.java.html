@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SessionsPageTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.page</a> &gt; <span class="el_source">SessionsPageTest.java</span></div><h1>SessionsPageTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.page;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.jacoco.core.data.ExecutionData;
+import org.jacoco.core.data.SessionInfo;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.jacoco.report.internal.html.index.ElementIndex;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link SessionsPage}.
+ */
+<span class="fc" id="L33">public class SessionsPageTest extends PageTestBase {</span>
+
+<span class="fc" id="L35">	private final List&lt;SessionInfo&gt; noSessions = Collections.emptyList();</span>
+
+<span class="fc" id="L37">	private final Collection&lt;ExecutionData&gt; noExecutionData = Collections</span>
+			.emptyList();
+
+	private ElementIndex index;
+
+	@Before
+	@Override
+	public void setup() throws Exception {
+<span class="fc" id="L45">		super.setup();</span>
+<span class="fc" id="L46">		index = new ElementIndex(rootFolder);</span>
+<span class="fc" id="L47">	}</span>
+
+	@Test
+	public void testGetLinkStyle() {
+<span class="fc" id="L51">		final SessionsPage page = new SessionsPage(noSessions, noExecutionData,</span>
+				index, null, rootFolder, context);
+<span class="fc" id="L53">		assertEquals(&quot;el_session&quot;, page.getLinkStyle());</span>
+<span class="fc" id="L54">	}</span>
+
+	@Test
+	public void testGetFileName() {
+<span class="fc" id="L58">		final SessionsPage page = new SessionsPage(noSessions, noExecutionData,</span>
+				index, null, rootFolder, context);
+<span class="fc" id="L60">		assertEquals(&quot;.sessions.html&quot;, page.getFileName());</span>
+<span class="fc" id="L61">	}</span>
+
+	@Test
+	public void testGetLinkLabel() {
+<span class="fc" id="L65">		final SessionsPage page = new SessionsPage(noSessions, noExecutionData,</span>
+				index, null, rootFolder, context);
+<span class="fc" id="L67">		assertEquals(&quot;Sessions&quot;, page.getLinkLabel());</span>
+<span class="fc" id="L68">	}</span>
+
+	@Test
+	public void testEmptyContent() throws Exception {
+<span class="fc" id="L72">		final SessionsPage page = new SessionsPage(noSessions, noExecutionData,</span>
+				index, null, rootFolder, context);
+<span class="fc" id="L74">		page.render();</span>
+<span class="fc" id="L75">		final Document doc = support.parse(output.getFile(&quot;.sessions.html&quot;));</span>
+<span class="fc" id="L76">		assertEquals(&quot;No session information available.&quot;,</span>
+				support.findStr(doc, &quot;/html/body/p[1]&quot;));
+<span class="fc" id="L78">		assertEquals(&quot;No execution data available.&quot;,</span>
+				support.findStr(doc, &quot;/html/body/p[2]&quot;));
+<span class="fc" id="L80">	}</span>
+
+	@Test
+	public void testSessionListContent() throws Exception {
+<span class="fc" id="L84">		final List&lt;SessionInfo&gt; sessions = new ArrayList&lt;SessionInfo&gt;();</span>
+<span class="fc" id="L85">		sessions.add(new SessionInfo(&quot;Session-A&quot;, 0, 0));</span>
+<span class="fc" id="L86">		sessions.add(new SessionInfo(&quot;Session-B&quot;, 0, 0));</span>
+<span class="fc" id="L87">		sessions.add(new SessionInfo(&quot;Session-C&quot;, 0, 0));</span>
+<span class="fc" id="L88">		final SessionsPage page = new SessionsPage(sessions, noExecutionData,</span>
+				index, null, rootFolder, context);
+<span class="fc" id="L90">		page.render();</span>
+<span class="fc" id="L91">		final Document doc = support.parse(output.getFile(&quot;.sessions.html&quot;));</span>
+<span class="fc" id="L92">		assertEquals(&quot;el_session&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[1]/span/@class&quot;));
+<span class="fc" id="L94">		assertEquals(&quot;Session-A&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[1]/span&quot;));
+<span class="fc" id="L96">		assertEquals(&quot;Session-B&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[2]/td[1]&quot;));
+<span class="fc" id="L98">		assertEquals(&quot;Session-C&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[3]/td[1]&quot;));
+<span class="fc" id="L100">	}</span>
+
+	@Test
+	public void testExecutionDataContent() throws Exception {
+<span class="fc" id="L104">		final Collection&lt;ExecutionData&gt; data = new ArrayList&lt;ExecutionData&gt;();</span>
+<span class="fc" id="L105">		data.add(new ExecutionData(0x1000, &quot;ClassB&quot;, new boolean[0]));</span>
+<span class="fc" id="L106">		data.add(new ExecutionData(0x1001, &quot;ClassC&quot;, new boolean[0]));</span>
+<span class="fc" id="L107">		data.add(new ExecutionData(0x1002, &quot;ClassA&quot;, new boolean[0]));</span>
+<span class="fc" id="L108">		index.addClass(new ReportPage(null, rootFolder, context) {</span>
+
+			public String getLinkLabel() {
+<span class="nc" id="L111">				return &quot;Foo&quot;;</span>
+			}
+
+			@Override
+			protected String getFileName() {
+<span class="fc" id="L116">				return &quot;Foo.html&quot;;</span>
+			}
+
+			public String getLinkStyle() {
+<span class="nc" id="L120">				return &quot;sample&quot;;</span>
+			}
+
+			@Override
+			protected void content(HTMLElement body) throws IOException {
+<span class="nc" id="L125">			}</span>
+		}, 0x1002);
+
+<span class="fc" id="L128">		final SessionsPage page = new SessionsPage(noSessions, data, index,</span>
+				null, rootFolder, context);
+<span class="fc" id="L130">		page.render();</span>
+<span class="fc" id="L131">		final Document doc = support.parse(output.getFile(&quot;.sessions.html&quot;));</span>
+<span class="fc" id="L132">		assertEquals(&quot;el_class&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[1]/a/@class&quot;));
+<span class="fc" id="L134">		assertEquals(&quot;Foo.html&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[1]/a/@href&quot;));
+<span class="fc" id="L136">		assertEquals(&quot;ClassA&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[1]/td[1]/a&quot;));
+<span class="fc" id="L138">		assertEquals(&quot;0000000000001002&quot;, support.findStr(doc,</span>
+				&quot;/html/body/table[1]/tbody/tr[1]/td[2]/code&quot;));
+<span class="fc" id="L140">		assertEquals(&quot;ClassB&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[2]/td[1]&quot;));
+<span class="fc" id="L142">		assertEquals(&quot;ClassC&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table[1]/tbody/tr[3]/td[1]&quot;));
+<span class="fc" id="L144">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

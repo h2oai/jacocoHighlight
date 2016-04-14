@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>BundleCoverageImplTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.analysis</a> &gt; <span class="el_source">BundleCoverageImplTest.java</span></div><h1>BundleCoverageImplTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.analysis;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.analysis.ICoverageNode;
+import org.jacoco.core.analysis.IPackageCoverage;
+import org.jacoco.core.analysis.ISourceFileCoverage;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link BundleCoverageImpl}.
+ */
+<span class="fc" id="L31">public class BundleCoverageImplTest {</span>
+
+	@Test
+	public void testProperties() {
+<span class="fc" id="L35">		Collection&lt;IClassCoverage&gt; classes = Collections.emptySet();</span>
+<span class="fc" id="L36">		Collection&lt;ISourceFileCoverage&gt; sourcefiles = Collections.emptySet();</span>
+<span class="fc" id="L37">		Collection&lt;IPackageCoverage&gt; packages = Collections</span>
+				.singleton((IPackageCoverage) new PackageCoverageImpl(&quot;p1&quot;,
+						classes, sourcefiles));
+<span class="fc" id="L40">		BundleCoverageImpl bundle = new BundleCoverageImpl(&quot;testbundle&quot;,</span>
+				packages);
+<span class="fc" id="L42">		assertEquals(ICoverageNode.ElementType.BUNDLE, bundle.getElementType());</span>
+<span class="fc" id="L43">		assertEquals(&quot;testbundle&quot;, bundle.getName());</span>
+<span class="fc" id="L44">		assertEquals(packages, bundle.getPackages());</span>
+<span class="fc" id="L45">	}</span>
+
+	@Test
+	public void testCounters() {
+<span class="fc" id="L49">		Collection&lt;IClassCoverage&gt; classes = Collections.emptySet();</span>
+<span class="fc" id="L50">		Collection&lt;ISourceFileCoverage&gt; sourcefiles = Collections.emptySet();</span>
+<span class="fc" id="L51">		final IPackageCoverage p1 = new PackageCoverageImpl(&quot;p1&quot;, classes,</span>
+<span class="fc" id="L52">				sourcefiles) {</span>
+			{
+<span class="fc" id="L54">				classCounter = CounterImpl.getInstance(1, 0);</span>
+<span class="fc" id="L55">				methodCounter = CounterImpl.getInstance(2, 0);</span>
+<span class="fc" id="L56">				branchCounter = CounterImpl.getInstance(3, 0);</span>
+<span class="fc" id="L57">				instructionCounter = CounterImpl.getInstance(4, 0);</span>
+<span class="fc" id="L58">				lineCounter = CounterImpl.getInstance(5, 0);</span>
+<span class="fc" id="L59">			}</span>
+		};
+<span class="fc" id="L61">		final IPackageCoverage p2 = new PackageCoverageImpl(&quot;p1&quot;, classes,</span>
+<span class="fc" id="L62">				sourcefiles) {</span>
+			{
+<span class="fc" id="L64">				classCounter = CounterImpl.getInstance(1, 0);</span>
+<span class="fc" id="L65">				methodCounter = CounterImpl.getInstance(2, 0);</span>
+<span class="fc" id="L66">				branchCounter = CounterImpl.getInstance(3, 0);</span>
+<span class="fc" id="L67">				instructionCounter = CounterImpl.getInstance(4, 0);</span>
+<span class="fc" id="L68">				lineCounter = CounterImpl.getInstance(5, 0);</span>
+<span class="fc" id="L69">			}</span>
+		};
+<span class="fc" id="L71">		BundleCoverageImpl bundle = new BundleCoverageImpl(&quot;testbundle&quot;,</span>
+				Arrays.asList(p1, p2));
+<span class="fc" id="L73">		assertEquals(CounterImpl.getInstance(2, 0), bundle.getClassCounter());</span>
+<span class="fc" id="L74">		assertEquals(CounterImpl.getInstance(4, 0), bundle.getMethodCounter());</span>
+<span class="fc" id="L75">		assertEquals(CounterImpl.getInstance(6, 0), bundle.getBranchCounter());</span>
+<span class="fc" id="L76">		assertEquals(CounterImpl.getInstance(8, 0),</span>
+				bundle.getInstructionCounter());
+<span class="fc" id="L78">		assertEquals(CounterImpl.getInstance(10, 0), bundle.getLineCounter());</span>
+<span class="fc" id="L79">	}</span>
+
+	@Test
+	public void testGroupByPackage() {
+<span class="fc" id="L83">		ClassCoverageImpl ca = new ClassCoverageImpl(&quot;p1/A&quot;, 1, false);</span>
+<span class="fc" id="L84">		ca.setSourceFileName(&quot;A.java&quot;);</span>
+<span class="fc" id="L85">		ClassCoverageImpl cb = new ClassCoverageImpl(&quot;p2/B&quot;, 2, false);</span>
+<span class="fc" id="L86">		cb.setSourceFileName(&quot;B.java&quot;);</span>
+<span class="fc" id="L87">		ISourceFileCoverage sb = new SourceFileCoverageImpl(&quot;B.java&quot;, &quot;p2&quot;);</span>
+<span class="fc" id="L88">		ISourceFileCoverage sc = new SourceFileCoverageImpl(&quot;C.java&quot;, &quot;p3&quot;);</span>
+<span class="fc" id="L89">		BundleCoverageImpl bundle = new BundleCoverageImpl(&quot;bundle&quot;,</span>
+				Arrays.asList((IClassCoverage) ca, (IClassCoverage) cb),
+				Arrays.asList(sb, sc));
+
+<span class="fc" id="L93">		Collection&lt;IPackageCoverage&gt; packages = bundle.getPackages();</span>
+<span class="fc" id="L94">		assertEquals(3, packages.size(), 0.0);</span>
+
+<span class="fc" id="L96">		IPackageCoverage p1 = findPackage(&quot;p1&quot;, packages);</span>
+<span class="fc" id="L97">		assertNotNull(p1);</span>
+<span class="fc" id="L98">		assertEquals(Collections.singletonList(ca), p1.getClasses());</span>
+<span class="fc" id="L99">		assertTrue(p1.getSourceFiles().isEmpty());</span>
+
+<span class="fc" id="L101">		IPackageCoverage p2 = findPackage(&quot;p2&quot;, packages);</span>
+<span class="fc" id="L102">		assertNotNull(p2);</span>
+<span class="fc" id="L103">		assertEquals(Collections.singletonList(cb), p2.getClasses());</span>
+<span class="fc" id="L104">		assertEquals(Collections.singletonList(sb), p2.getSourceFiles());</span>
+
+<span class="fc" id="L106">		IPackageCoverage p3 = findPackage(&quot;p3&quot;, packages);</span>
+<span class="fc" id="L107">		assertNotNull(p3);</span>
+<span class="fc" id="L108">		assertTrue(p3.getClasses().isEmpty());</span>
+<span class="fc" id="L109">		assertEquals(Collections.singletonList(sc), p3.getSourceFiles());</span>
+<span class="fc" id="L110">	}</span>
+
+	private IPackageCoverage findPackage(String name,
+			Collection&lt;IPackageCoverage&gt; packages) {
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">		for (IPackageCoverage p : packages) {</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">			if (name.equals(p.getName())) {</span>
+<span class="fc" id="L116">				return p;</span>
+			}
+<span class="fc" id="L118">		}</span>
+<span class="nc" id="L119">		return null;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ReportPageTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.page</a> &gt; <span class="el_source">ReportPageTest.java</span></div><h1>ReportPageTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.page;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.jacoco.report.internal.ReportOutputFolder;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.jacoco.report.internal.html.HTMLSupport;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link ReportPage}.
+ */
+<span class="fc" id="L30">public class ReportPageTest extends PageTestBase {</span>
+
+	private ReportPage rootpage;
+
+	private ReportPage page;
+
+<span class="fc" id="L36">	private class TestReportPage extends ReportPage {</span>
+
+		private final String label;
+		private final String style;
+
+<span class="fc" id="L41">		protected TestReportPage(String label, String style, ReportPage parent) {</span>
+<span class="fc" id="L42">			super(parent, rootFolder, ReportPageTest.this.context);</span>
+<span class="fc" id="L43">			this.label = label;</span>
+<span class="fc" id="L44">			this.style = style;</span>
+<span class="fc" id="L45">		}</span>
+
+		@Override
+		protected void content(HTMLElement body) throws IOException {
+<span class="fc" id="L49">			body.div(&quot;testcontent&quot;).text(&quot;Hello Test&quot;);</span>
+<span class="fc" id="L50">		}</span>
+
+		@Override
+		protected String getFileName() {
+<span class="fc" id="L54">			return label + &quot;.html&quot;;</span>
+		}
+
+		public String getLinkLabel() {
+<span class="fc" id="L58">			return label;</span>
+		}
+
+		public String getLinkStyle() {
+<span class="fc" id="L62">			return style;</span>
+		}
+
+	}
+
+	@Before
+	@Override
+	public void setup() throws Exception {
+<span class="fc" id="L70">		super.setup();</span>
+<span class="fc" id="L71">		rootpage = new TestReportPage(&quot;Report&quot;, &quot;el_report&quot;, null);</span>
+<span class="fc" id="L72">		page = new TestReportPage(&quot;Test&quot;, &quot;el_group&quot;, rootpage);</span>
+<span class="fc" id="L73">	}</span>
+
+	@Test
+	public void testIsRootPage1() {
+<span class="fc" id="L77">		assertFalse(page.isRootPage());</span>
+<span class="fc" id="L78">	}</span>
+
+	@Test
+	public void testIsRootPage2() {
+<span class="fc" id="L82">		assertTrue(rootpage.isRootPage());</span>
+<span class="fc" id="L83">	}</span>
+
+	@Test
+	public void testGetLink() throws IOException {
+<span class="fc" id="L87">		ReportOutputFolder base = rootFolder.subFolder(&quot;here&quot;);</span>
+<span class="fc" id="L88">		assertEquals(&quot;../Test.html&quot;, page.getLink(base));</span>
+<span class="fc" id="L89">	}</span>
+
+	@Test
+	public void testPageContent() throws Exception {
+<span class="fc" id="L93">		page.render();</span>
+<span class="fc" id="L94">		final HTMLSupport support = new HTMLSupport();</span>
+<span class="fc" id="L95">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+
+		// language
+<span class="fc" id="L98">		assertEquals(&quot;en&quot;, support.findStr(doc, &quot;/html/@lang&quot;));</span>
+
+		// style sheet
+<span class="fc" id="L101">		assertEquals(&quot;.resources/report.css&quot;, support.findStr(doc,</span>
+				&quot;/html/head/link[@rel='stylesheet']/@href&quot;));
+
+		// bread crumb
+<span class="fc" id="L105">		assertEquals(&quot;Report&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='breadcrumb']/a[1]/text()&quot;));
+<span class="fc" id="L107">		assertEquals(&quot;Report.html&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='breadcrumb']/a[1]/@href&quot;));
+<span class="fc" id="L109">		assertEquals(&quot;el_report&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='breadcrumb']/a[1]/@class&quot;));
+<span class="fc" id="L111">		assertEquals(&quot;Test&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='breadcrumb']/span[2]/text()&quot;));
+<span class="fc" id="L113">		assertEquals(&quot;el_group&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='breadcrumb']/span[2]/@class&quot;));
+
+		// Header
+<span class="fc" id="L117">		assertEquals(&quot;Test&quot;, support.findStr(doc, &quot;/html/body/h1/text()&quot;));</span>
+
+		// Content
+<span class="fc" id="L120">		assertEquals(&quot;Hello Test&quot;, support.findStr(doc,</span>
+				&quot;/html/body/div[@class='testcontent']/text()&quot;));
+
+		// Footer
+<span class="fc" id="L124">		assertEquals(&quot;CustomFooter&quot;,</span>
+				support.findStr(doc, &quot;/html/body/div[@class='footer']/text()&quot;));
+<span class="fc" id="L126">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

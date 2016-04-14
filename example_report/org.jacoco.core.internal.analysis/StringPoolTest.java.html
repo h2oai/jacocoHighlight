@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StringPoolTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.analysis</a> &gt; <span class="el_source">StringPoolTest.java</span></div><h1>StringPoolTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.analysis;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link StringPool}.
+ */
+<span class="fc" id="L24">public class StringPoolTest {</span>
+
+	private StringPool pool;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L30">		pool = new StringPool();</span>
+<span class="fc" id="L31">	}</span>
+
+	@Test
+	public void testGetStringNull() {
+<span class="fc" id="L35">		assertNull(pool.get((String) null));</span>
+<span class="fc" id="L36">	}</span>
+
+	@Test
+	public void testGetString() {
+<span class="fc" id="L40">		final String a = pool.get(new String(&quot;JaCoCo&quot;));</span>
+<span class="fc" id="L41">		final String b = pool.get(new String(&quot;JaCoCo&quot;));</span>
+
+<span class="fc" id="L43">		assertEquals(&quot;JaCoCo&quot;, a);</span>
+<span class="fc" id="L44">		assertEquals(&quot;JaCoCo&quot;, b);</span>
+<span class="fc" id="L45">		assertSame(a, b);</span>
+<span class="fc" id="L46">	}</span>
+
+	@Test
+	public void testGetArrayNull() {
+<span class="fc" id="L50">		assertNull(pool.get((String[]) null));</span>
+<span class="fc" id="L51">	}</span>
+
+	@Test
+	public void testGetEmptyArray() {
+<span class="fc" id="L55">		final String[] arr1 = pool.get(new String[0]);</span>
+<span class="fc" id="L56">		final String[] arr2 = pool.get(new String[0]);</span>
+
+<span class="fc" id="L58">		assertEquals(0, arr1.length);</span>
+<span class="fc" id="L59">		assertSame(arr1, arr2);</span>
+<span class="fc" id="L60">	}</span>
+
+	@Test
+	public void testGetArray() {
+<span class="fc" id="L64">		final String[] arr1 = pool.get(new String[] { new String(&quot;JaCoCo&quot;) });</span>
+<span class="fc" id="L65">		final String[] arr2 = pool.get(new String[] { new String(&quot;JaCoCo&quot;) });</span>
+
+<span class="fc" id="L67">		assertEquals(1, arr1.length);</span>
+<span class="fc" id="L68">		assertEquals(&quot;JaCoCo&quot;, arr1[0]);</span>
+<span class="fc" id="L69">		assertSame(arr1[0], arr2[0]);</span>
+<span class="fc" id="L70">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

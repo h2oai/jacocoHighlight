@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Target01.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.test.validation.targets</a> &gt; <span class="el_source">Target01.java</span></div><h1>Target01.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.test.validation.targets;
+
+import static org.jacoco.core.test.validation.targets.Stubs.f;
+import static org.jacoco.core.test.validation.targets.Stubs.i2;
+import static org.jacoco.core.test.validation.targets.Stubs.nop;
+import static org.jacoco.core.test.validation.targets.Stubs.t;
+
+import java.util.Collections;
+
+/**
+ * This target exercises a set of common Java control structures.
+ */
+<span class="nc" id="L24">public class Target01 implements Runnable {</span>
+
+	public void run() {
+
+		// 1. Unconditional execution
+<span class="nc" id="L29">		nop(); // $line-unconditional$</span>
+
+		// 2. Missed if block
+<span class="nc bnc" id="L32" title="All 2 branches missed.">		if (f()) { // $line-iffalse$</span>
+<span class="nc" id="L33">			nop(); // $line-missedif$</span>
+		} else {
+<span class="nc" id="L35">			nop(); // $line-executedelse$</span>
+		}
+
+		// 3. Executed if block
+<span class="nc bnc" id="L39" title="All 2 branches missed.">		if (t()) { // $line-iftrue$</span>
+<span class="nc" id="L40">			nop(); // $line-executedif$</span>
+		} else {
+<span class="nc" id="L42">			nop(); // $line-missedelse$</span>
+		}
+
+		// 4. Missed while block
+<span class="nc bnc" id="L46" title="All 2 branches missed.">		while (f()) { // $line-whilefalse$</span>
+<span class="nc" id="L47">			nop(); // $line-missedwhile$</span>
+		}
+
+		// 5. Always executed while block
+<span class="nc bnc" id="L51" title="All 2 branches missed.">		while (t()) { // $line-whiletrue$</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">			if (t()) {</span>
+<span class="nc" id="L53">				break;</span>
+			}
+		}
+
+		// 6. Executed while block
+<span class="nc" id="L58">		int i = 0;</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">		while (i++ &lt; 3) { // $line-whiletruefalse$</span>
+<span class="nc" id="L60">			nop(); // $line-executedwhile$</span>
+		}
+
+		// 7. Executed do while block
+		do {
+<span class="nc" id="L65">			nop(); // $line-executeddowhile$</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">		} while (f());</span>
+
+		// 8. Missed for block
+<span class="nc bnc" id="L69" title="All 2 branches missed.">		for (nop(); f(); nop()) { // $line-missedforincrementer$</span>
+<span class="nc" id="L70">			nop(); // $line-missedfor$</span>
+		}
+
+		// 9. Executed for block
+<span class="nc bnc" id="L74" title="All 2 branches missed.">		for (int j = 0; j &lt; 1; j++) { // $line-executedforincrementer$</span>
+<span class="nc" id="L75">			nop(); // $line-executedfor$</span>
+		}
+
+		// 10. Missed for each block
+<span class="nc bnc" id="L79" title="All 2 branches missed.">		for (Object o : Collections.emptyList()) { // $line-missedforeachincrementer$</span>
+<span class="nc" id="L80">			nop(o); // $line-missedforeach$</span>
+<span class="nc" id="L81">		}</span>
+
+		// 11. Executed for each block
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		for (Object o : Collections.singleton(new Object())) { // $line-executedforeachincrementer$</span>
+<span class="nc" id="L85">			nop(o); // $line-executedforeach$</span>
+<span class="nc" id="L86">		}</span>
+
+		// 12. Table switch with hit
+<span class="nc bnc" id="L89" title="All 4 branches missed.">		switch (i2()) { // $line-tswitch1$</span>
+		case 1:
+<span class="nc" id="L91">			nop(); // $line-tswitch1case1$</span>
+<span class="nc" id="L92">			break;</span>
+		case 2:
+<span class="nc" id="L94">			nop(); // $line-tswitch1case2$</span>
+<span class="nc" id="L95">			break;</span>
+		case 3:
+<span class="nc" id="L97">			nop(); // $line-tswitch1case3$</span>
+<span class="nc" id="L98">			break;</span>
+		default:
+<span class="nc" id="L100">			nop(); // $line-tswitch1default$</span>
+			break;
+		}
+
+		// 13. Continued table switch with hit
+<span class="nc bnc" id="L105" title="All 4 branches missed.">		switch (i2()) { // $line-tswitch2$</span>
+		case 1:
+<span class="nc" id="L107">			nop(); // $line-tswitch2case1$</span>
+		case 2:
+<span class="nc" id="L109">			nop(); // $line-tswitch2case2$</span>
+		case 3:
+<span class="nc" id="L111">			nop(); // $line-tswitch2case3$</span>
+		default:
+<span class="nc" id="L113">			nop(); // $line-tswitch2default$</span>
+		}
+
+		// 14. Table switch without hit
+<span class="nc bnc" id="L117" title="All 4 branches missed.">		switch (i2()) { // $line-tswitch3$</span>
+		case 3:
+<span class="nc" id="L119">			nop(); // $line-tswitch3case1$</span>
+<span class="nc" id="L120">			break;</span>
+		case 4:
+<span class="nc" id="L122">			nop(); // $line-tswitch3case2$</span>
+<span class="nc" id="L123">			break;</span>
+		case 5:
+<span class="nc" id="L125">			nop(); // $line-tswitch3case3$</span>
+<span class="nc" id="L126">			break;</span>
+		default:
+<span class="nc" id="L128">			nop(); // $line-tswitch3default$</span>
+			break;
+		}
+
+		// 15. Lookup switch with hit
+<span class="nc bnc" id="L133" title="All 4 branches missed.">		switch (i2()) { // $line-lswitch1$</span>
+		case -123:
+<span class="nc" id="L135">			nop(); // $line-lswitch1case1$</span>
+<span class="nc" id="L136">			break;</span>
+		case 2:
+<span class="nc" id="L138">			nop(); // $line-lswitch1case2$</span>
+<span class="nc" id="L139">			break;</span>
+		case 456:
+<span class="nc" id="L141">			nop(); // $line-lswitch1case3$</span>
+<span class="nc" id="L142">			break;</span>
+		default:
+<span class="nc" id="L144">			nop(); // $line-lswitch1default$</span>
+			break;
+		}
+
+		// 16. Continued lookup switch with hit
+<span class="nc bnc" id="L149" title="All 4 branches missed.">		switch (i2()) { // $line-lswitch2$</span>
+		case -123:
+<span class="nc" id="L151">			nop(); // $line-lswitch2case1$</span>
+		case 2:
+<span class="nc" id="L153">			nop(); // $line-lswitch2case2$</span>
+		case 456:
+<span class="nc" id="L155">			nop(); // $line-lswitch2case3$</span>
+		default:
+<span class="nc" id="L157">			nop(); // $line-lswitch2default$</span>
+		}
+
+		// 17. Lookup switch without hit
+<span class="nc bnc" id="L161" title="All 4 branches missed.">		switch (i2()) { // $line-lswitch3$</span>
+		case -123:
+<span class="nc" id="L163">			nop(); // $line-lswitch3case1$</span>
+<span class="nc" id="L164">			break;</span>
+		case 456:
+<span class="nc" id="L166">			nop(); // $line-lswitch3case2$</span>
+<span class="nc" id="L167">			break;</span>
+		case 789:
+<span class="nc" id="L169">			nop(); // $line-lswitch3case3$</span>
+<span class="nc" id="L170">			break;</span>
+		default:
+<span class="nc" id="L172">			nop(); // $line-lswitch3default$</span>
+			break;
+		}
+
+		// 18. Break statement
+		while (true) {
+<span class="nc bnc" id="L178" title="All 2 branches missed.">			if (t()) {</span>
+<span class="nc" id="L179">				break; // $line-executedbreak$</span>
+			}
+<span class="nc" id="L181">			nop(); // $line-missedafterbreak$</span>
+		}
+
+		// 19. Continue statement
+<span class="nc bnc" id="L185" title="All 2 branches missed.">		for (int j = 0; j &lt; 1; j++) {</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">			if (t()) {</span>
+<span class="nc" id="L187">				continue; // $line-executedcontinue$</span>
+			}
+<span class="nc" id="L189">			nop(); // $line-missedaftercontinue$</span>
+		}
+
+<span class="nc" id="L192">		runReturn();</span>
+<span class="nc" id="L193">		runImplicitReturn();</span>
+
+<span class="nc" id="L195">	}</span>
+
+	private void runReturn() {
+
+		// 20. Return statement
+<span class="nc bnc" id="L200" title="All 2 branches missed.">		if (t()) {</span>
+<span class="nc" id="L201">			return; // $line-return$</span>
+		}
+<span class="nc" id="L203">		nop(); // $line-afterreturn$</span>
+
+<span class="nc" id="L205">	}</span>
+
+	private void runImplicitReturn() {
+
+		// 21. Implicit return
+<span class="nc" id="L210">	} // $line-implicitreturn$</span>
+
+	public static void main(String[] args) {
+<span class="nc" id="L213">		new Target01().run();</span>
+<span class="nc" id="L214">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

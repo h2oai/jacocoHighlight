@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Target03.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.test.perf.targets</a> &gt; <span class="el_source">Target03.java</span></div><h1>Target03.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.test.perf.targets;
+
+import java.util.Random;
+import java.util.concurrent.Callable;
+
+/**
+ * &quot;Game of Life&quot; implementation as a more reference scenario. Obviously the
+ * implementation could be more elegant using several classes, but the test
+ * runner targets one class only. Also one could think about more efficient
+ * implementations which again is not the focus here.
+ */
+public class Target03 implements Callable&lt;Void&gt; {
+
+	private final int width;
+
+	private final int height;
+
+	private boolean[][] field;
+
+<span class="nc" id="L31">	public Target03(int width, int height) {</span>
+<span class="nc" id="L32">		this.width = width;</span>
+<span class="nc" id="L33">		this.height = height;</span>
+<span class="nc" id="L34">		this.field = createField();</span>
+<span class="nc" id="L35">	}</span>
+
+	public Target03() {
+<span class="nc" id="L38">		this(64, 64);</span>
+<span class="nc" id="L39">	}</span>
+
+	private boolean[][] createField() {
+<span class="nc" id="L42">		boolean[][] f = new boolean[height][];</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">		for (int i = 0; i &lt; height; i++) {</span>
+<span class="nc" id="L44">			f[i] = new boolean[width];</span>
+		}
+<span class="nc" id="L46">		return f;</span>
+	}
+
+	public void set(int x, int y, boolean flag) {
+<span class="nc" id="L50">		field[wrap(x, width)][wrap(y, height)] = flag;</span>
+<span class="nc" id="L51">	}</span>
+
+	public boolean get(int x, int y) {
+<span class="nc" id="L54">		return field[wrap(x, width)][wrap(y, height)];</span>
+	}
+
+	public void clear() {
+<span class="nc" id="L58">		field = createField();</span>
+<span class="nc" id="L59">	}</span>
+
+	public void randomFill(long seed, int count) {
+<span class="nc" id="L62">		Random r = new Random(seed);</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">		for (int i = 0; i &lt; count; i++) {</span>
+<span class="nc" id="L64">			set(r.nextInt(), r.nextInt(), true);</span>
+		}
+
+<span class="nc" id="L67">	}</span>
+
+	public void tick() {
+<span class="nc" id="L70">		boolean[][] next = createField();</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">		for (int y = 0; y &lt; height; y++) {</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">			for (int x = 0; x &lt; width; x++) {</span>
+<span class="nc" id="L73">				final int n = getNeighbors(x, y);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">				if (get(x, y)) {</span>
+<span class="nc bnc" id="L75" title="All 4 branches missed.">					next[x][y] = 2 &lt;= n &amp;&amp; n &lt;= 3;</span>
+				} else {
+<span class="nc bnc" id="L77" title="All 2 branches missed.">					next[x][y] = n == 3;</span>
+				}
+			}
+		}
+<span class="nc" id="L81">		field = next;</span>
+<span class="nc" id="L82">	}</span>
+
+	// Neighbor
+	private int getNeighbors(int x, int y) {
+<span class="nc" id="L86">		int count = 0;</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">		if (get(x - 1, y - 1)) {</span>
+<span class="nc" id="L88">			count++;</span>
+		}
+<span class="nc bnc" id="L90" title="All 2 branches missed.">		if (get(x + 0, y - 1)) {</span>
+<span class="nc" id="L91">			count++;</span>
+		}
+<span class="nc bnc" id="L93" title="All 2 branches missed.">		if (get(x + 1, y - 1)) {</span>
+<span class="nc" id="L94">			count++;</span>
+		}
+<span class="nc bnc" id="L96" title="All 2 branches missed.">		if (get(x + 1, y + 0)) {</span>
+<span class="nc" id="L97">			count++;</span>
+		}
+<span class="nc bnc" id="L99" title="All 2 branches missed.">		if (get(x + 1, y + 1)) {</span>
+<span class="nc" id="L100">			count++;</span>
+		}
+<span class="nc bnc" id="L102" title="All 2 branches missed.">		if (get(x + 0, y + 1)) {</span>
+<span class="nc" id="L103">			count++;</span>
+		}
+<span class="nc bnc" id="L105" title="All 2 branches missed.">		if (get(x - 1, y + 1)) {</span>
+<span class="nc" id="L106">			count++;</span>
+		}
+<span class="nc bnc" id="L108" title="All 2 branches missed.">		if (get(x - 1, y + 0)) {</span>
+<span class="nc" id="L109">			count++;</span>
+		}
+<span class="nc" id="L111">		return count;</span>
+	}
+
+	private int wrap(int value, int size) {
+<span class="nc" id="L115">		int res = value % size;</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">		if (res &lt; 0) {</span>
+<span class="nc" id="L117">			res += size;</span>
+		}
+<span class="nc" id="L119">		return res;</span>
+	}
+
+	@Override
+	public String toString() {
+<span class="nc" id="L124">		StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">		for (int y = 0; y &lt; height; y++) {</span>
+<span class="nc bnc" id="L126" title="All 2 branches missed.">			for (int x = 0; x &lt; width; x++) {</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">				sb.append(get(x, y) ? 'O' : '.');</span>
+			}
+<span class="nc" id="L129">			sb.append('\n');</span>
+		}
+<span class="nc" id="L131">		return sb.toString();</span>
+	}
+
+	public Void call() throws Exception {
+<span class="nc" id="L135">		clear();</span>
+<span class="nc" id="L136">		randomFill(123, width * height / 2);</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">		for (int i = 0; i &lt; 20; i++) {</span>
+<span class="nc" id="L138">			tick();</span>
+		}
+<span class="nc" id="L140">		return null;</span>
+	}
+
+	// Demo
+	public static void main(String[] args) {
+<span class="nc" id="L145">		Target03 t = new Target03(10, 10);</span>
+<span class="nc" id="L146">		t.randomFill(123, 20);</span>
+
+<span class="nc bnc" id="L148" title="All 2 branches missed.">		for (int i = 0; i &lt; 10; i++) {</span>
+<span class="nc" id="L149">			System.out.println(&quot;Generation &quot; + i + &quot;:&quot;);</span>
+<span class="nc" id="L150">			System.out.println(t);</span>
+<span class="nc" id="L151">			t.tick();</span>
+		}
+<span class="nc" id="L153">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

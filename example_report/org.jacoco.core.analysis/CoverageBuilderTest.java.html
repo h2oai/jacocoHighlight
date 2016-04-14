@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>CoverageBuilderTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.analysis</a> &gt; <span class="el_source">CoverageBuilderTest.java</span></div><h1>CoverageBuilderTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.analysis;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.jacoco.core.internal.analysis.ClassCoverageImpl;
+import org.jacoco.core.internal.analysis.CounterImpl;
+import org.jacoco.core.internal.analysis.MethodCoverageImpl;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link CoverageBuilder}.
+ */
+<span class="fc" id="L35">public class CoverageBuilderTest {</span>
+
+	private CoverageBuilder coverageBuilder;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L41">		coverageBuilder = new CoverageBuilder();</span>
+<span class="fc" id="L42">	}</span>
+
+	@Test
+	public void testCreateClassMissed() {
+<span class="fc" id="L46">		final MethodCoverageImpl method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;,</span>
+				null);
+<span class="fc" id="L48">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 6);</span>
+<span class="fc" id="L49">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 7);</span>
+<span class="fc" id="L50">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 8);</span>
+<span class="fc" id="L51">		method.incrementMethodCounter();</span>
+<span class="fc" id="L52">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+<span class="fc" id="L54">		final Collection&lt;IClassCoverage&gt; classes = coverageBuilder.getClasses();</span>
+<span class="fc" id="L55">		assertEquals(1, classes.size());</span>
+<span class="fc" id="L56">		IClassCoverage c = classes.iterator().next();</span>
+<span class="fc" id="L57">		assertEquals(&quot;Sample&quot;, c.getName());</span>
+<span class="fc" id="L58">		assertEquals(1, c.getClassCounter().getTotalCount());</span>
+<span class="fc" id="L59">		assertEquals(0, c.getClassCounter().getCoveredCount());</span>
+<span class="fc" id="L60">		assertEquals(1, c.getMethodCounter().getTotalCount());</span>
+<span class="fc" id="L61">		assertEquals(0, c.getMethodCounter().getCoveredCount());</span>
+<span class="fc" id="L62">		assertEquals(3, c.getLineCounter().getTotalCount());</span>
+<span class="fc" id="L63">		assertEquals(0, c.getLineCounter().getCoveredCount());</span>
+
+<span class="fc" id="L65">		final Collection&lt;IMethodCoverage&gt; methods = c.getMethods();</span>
+<span class="fc" id="L66">		assertEquals(1, methods.size());</span>
+<span class="fc" id="L67">		IMethodCoverage m = methods.iterator().next();</span>
+<span class="fc" id="L68">		assertEquals(&quot;doit&quot;, m.getName());</span>
+<span class="fc" id="L69">		assertEquals(&quot;()V&quot;, m.getDesc());</span>
+<span class="fc" id="L70">		assertEquals(1, m.getMethodCounter().getTotalCount());</span>
+<span class="fc" id="L71">		assertEquals(0, m.getMethodCounter().getCoveredCount());</span>
+<span class="fc" id="L72">		assertEquals(3, m.getLineCounter().getTotalCount());</span>
+<span class="fc" id="L73">		assertEquals(0, m.getLineCounter().getCoveredCount());</span>
+<span class="fc" id="L74">	}</span>
+
+	@Test
+	public void testCreateClassCovered() {
+<span class="fc" id="L78">		final MethodCoverageImpl method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;,</span>
+				null);
+<span class="fc" id="L80">		method.increment(CounterImpl.COUNTER_0_1, CounterImpl.COUNTER_0_0, 6);</span>
+<span class="fc" id="L81">		method.increment(CounterImpl.COUNTER_0_1, CounterImpl.COUNTER_0_0, 7);</span>
+<span class="fc" id="L82">		method.increment(CounterImpl.COUNTER_0_1, CounterImpl.COUNTER_0_0, 8);</span>
+<span class="fc" id="L83">		method.incrementMethodCounter();</span>
+<span class="fc" id="L84">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+<span class="fc" id="L86">		final Collection&lt;IClassCoverage&gt; classes = coverageBuilder.getClasses();</span>
+<span class="fc" id="L87">		assertEquals(1, classes.size());</span>
+<span class="fc" id="L88">		IClassCoverage c = classes.iterator().next();</span>
+<span class="fc" id="L89">		assertEquals(&quot;Sample&quot;, c.getName());</span>
+<span class="fc" id="L90">		assertEquals(1, c.getClassCounter().getTotalCount());</span>
+<span class="fc" id="L91">		assertEquals(1, c.getClassCounter().getCoveredCount());</span>
+<span class="fc" id="L92">		assertEquals(1, c.getMethodCounter().getTotalCount());</span>
+<span class="fc" id="L93">		assertEquals(1, c.getMethodCounter().getCoveredCount());</span>
+<span class="fc" id="L94">		assertEquals(3, c.getLineCounter().getTotalCount());</span>
+<span class="fc" id="L95">		assertEquals(3, c.getLineCounter().getCoveredCount());</span>
+
+<span class="fc" id="L97">		final Collection&lt;IMethodCoverage&gt; methods = c.getMethods();</span>
+<span class="fc" id="L98">		assertEquals(1, methods.size());</span>
+<span class="fc" id="L99">		IMethodCoverage m = methods.iterator().next();</span>
+<span class="fc" id="L100">		assertEquals(&quot;doit&quot;, m.getName());</span>
+<span class="fc" id="L101">		assertEquals(&quot;()V&quot;, m.getDesc());</span>
+<span class="fc" id="L102">		assertEquals(1, m.getMethodCounter().getTotalCount());</span>
+<span class="fc" id="L103">		assertEquals(1, m.getMethodCounter().getCoveredCount());</span>
+<span class="fc" id="L104">		assertEquals(3, m.getLineCounter().getTotalCount());</span>
+<span class="fc" id="L105">		assertEquals(3, m.getLineCounter().getCoveredCount());</span>
+<span class="fc" id="L106">	}</span>
+
+	@Test
+	public void testIgnoreClassesWithoutCode() {
+<span class="fc" id="L110">		final MethodCoverageImpl method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;,</span>
+				null);
+<span class="fc" id="L112">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+<span class="fc" id="L114">		final Collection&lt;IClassCoverage&gt; classes = coverageBuilder.getClasses();</span>
+<span class="fc" id="L115">		assertTrue(classes.isEmpty());</span>
+<span class="fc" id="L116">	}</span>
+
+	@Test(expected = IllegalStateException.class)
+	public void testDuplicateClassNameDifferent() {
+<span class="fc" id="L120">		MethodCoverageImpl method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L121">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L122">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+		// Add class with different id must fail:
+<span class="fc" id="L125">		method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L126">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="nc" id="L127">		addClass(345L, false, &quot;Sample&quot;, null, method);</span>
+<span class="nc" id="L128">	}</span>
+
+	@Test
+	public void testDuplicateClassNameIdentical() {
+<span class="fc" id="L132">		MethodCoverageImpl method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L133">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L134">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+		// Add class with same id:
+<span class="fc" id="L137">		method = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L138">		method.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L139">		addClass(123L, false, &quot;Sample&quot;, null, method);</span>
+
+		// Second add must be ignored:
+<span class="fc" id="L142">		final Collection&lt;IClassCoverage&gt; classes = coverageBuilder.getClasses();</span>
+<span class="fc" id="L143">		assertEquals(1, classes.size());</span>
+<span class="fc" id="L144">	}</span>
+
+	@Test
+	public void testCreateSourceFile() {
+<span class="fc" id="L148">		final MethodCoverageImpl method1 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L150">		method1.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L151">		addClass(123L, false, &quot;Sample&quot;, &quot;Sample.java&quot;, method1);</span>
+
+<span class="fc" id="L153">		final MethodCoverageImpl method2 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L155">		method2.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 6);</span>
+<span class="fc" id="L156">		addClass(234L, false, &quot;Second&quot;, &quot;Sample.java&quot;, method2);</span>
+
+<span class="fc" id="L158">		final Collection&lt;ISourceFileCoverage&gt; sourcefiles = coverageBuilder</span>
+				.getSourceFiles();
+<span class="fc" id="L160">		assertEquals(1, sourcefiles.size());</span>
+<span class="fc" id="L161">		ISourceFileCoverage s = sourcefiles.iterator().next();</span>
+
+<span class="fc" id="L163">		assertEquals(2, s.getClassCounter().getTotalCount());</span>
+<span class="fc" id="L164">		assertEquals(0, s.getClassCounter().getCoveredCount());</span>
+<span class="fc" id="L165">	}</span>
+
+	@Test
+	public void testCreateSourceFileDuplicateClassNameIdentical() {
+<span class="fc" id="L169">		final MethodCoverageImpl method1 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L171">		method1.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L172">		addClass(123L, false, &quot;Sample&quot;, &quot;Sample.java&quot;, method1);</span>
+
+<span class="fc" id="L174">		final MethodCoverageImpl method2 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L176">		method2.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L177">		addClass(123L, false, &quot;Sample&quot;, &quot;Sample.java&quot;, method2);</span>
+
+<span class="fc" id="L179">		final Collection&lt;ISourceFileCoverage&gt; sourcefiles = coverageBuilder</span>
+				.getSourceFiles();
+<span class="fc" id="L181">		assertEquals(1, sourcefiles.size());</span>
+<span class="fc" id="L182">		ISourceFileCoverage s = sourcefiles.iterator().next();</span>
+
+<span class="fc" id="L184">		assertEquals(1, s.getClassCounter().getTotalCount());</span>
+<span class="fc" id="L185">		assertEquals(0, s.getClassCounter().getCoveredCount());</span>
+<span class="fc" id="L186">	}</span>
+
+	@Test
+	public void testGetBundle() {
+<span class="fc" id="L190">		final MethodCoverageImpl method1 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L192">		method1.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L193">		addClass(1, false, &quot;org/jacoco/examples/Sample1&quot;, null, method1);</span>
+
+<span class="fc" id="L195">		final MethodCoverageImpl method2 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L197">		method2.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 6);</span>
+<span class="fc" id="L198">		addClass(2, false, &quot;org/jacoco/examples/Sample2&quot;, null, method2);</span>
+
+<span class="fc" id="L200">		final MethodCoverageImpl method3 = new MethodCoverageImpl(&quot;doit&quot;,</span>
+				&quot;()V&quot;, null);
+<span class="fc" id="L202">		method3.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 1);</span>
+<span class="fc" id="L203">		addClass(3, false, &quot;Sample3&quot;, null, method3);</span>
+
+<span class="fc" id="L205">		IBundleCoverage bundle = coverageBuilder.getBundle(&quot;testbundle&quot;);</span>
+<span class="fc" id="L206">		assertEquals(&quot;testbundle&quot;, bundle.getName());</span>
+
+<span class="fc" id="L208">		final Collection&lt;IPackageCoverage&gt; packages = bundle.getPackages();</span>
+<span class="fc" id="L209">		assertEquals(2, packages.size());</span>
+<span class="fc" id="L210">		Map&lt;String, IPackageCoverage&gt; packagesByName = new HashMap&lt;String, IPackageCoverage&gt;();</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">		for (IPackageCoverage p : packages) {</span>
+<span class="fc" id="L212">			packagesByName.put(p.getName(), p);</span>
+<span class="fc" id="L213">		}</span>
+
+<span class="fc" id="L215">		IPackageCoverage p1 = packagesByName.get(&quot;org/jacoco/examples&quot;);</span>
+<span class="fc" id="L216">		assertNotNull(p1);</span>
+<span class="fc" id="L217">		assertEquals(</span>
+				new HashSet&lt;String&gt;(Arrays.asList(
+						&quot;org/jacoco/examples/Sample1&quot;,
+						&quot;org/jacoco/examples/Sample2&quot;)),
+				getNames(p1.getClasses()));
+
+<span class="fc" id="L223">		IPackageCoverage p2 = packagesByName.get(&quot;&quot;);</span>
+<span class="fc" id="L224">		assertNotNull(p2);</span>
+<span class="fc" id="L225">		assertEquals(Collections.singleton(&quot;Sample3&quot;),</span>
+				getNames(p2.getClasses()));
+<span class="fc" id="L227">	}</span>
+
+	@Test
+	public void testGetNoMatchClasses() {
+<span class="fc" id="L231">		MethodCoverageImpl m = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L232">		m.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 1);</span>
+<span class="fc" id="L233">		addClass(1, true, &quot;Sample1&quot;, null, m);</span>
+
+<span class="fc" id="L235">		m = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L236">		m.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 2);</span>
+<span class="fc" id="L237">		addClass(2, true, &quot;Sample2&quot;, null, m);</span>
+
+<span class="fc" id="L239">		m = new MethodCoverageImpl(&quot;doit&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L240">		m.increment(CounterImpl.COUNTER_1_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L241">		addClass(3, false, &quot;Sample3&quot;, null, m);</span>
+
+<span class="fc" id="L243">		final Set&lt;String&gt; actual = getNames(coverageBuilder.getNoMatchClasses());</span>
+<span class="fc" id="L244">		final Set&lt;String&gt; expected = new HashSet&lt;String&gt;(Arrays.asList(</span>
+				&quot;Sample1&quot;, &quot;Sample2&quot;));
+
+<span class="fc" id="L247">		assertEquals(expected, actual);</span>
+<span class="fc" id="L248">	}</span>
+
+	private Set&lt;String&gt; getNames(Collection&lt;? extends ICoverageNode&gt; nodes) {
+<span class="fc" id="L251">		Set&lt;String&gt; result = new HashSet&lt;String&gt;();</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">		for (ICoverageNode n : nodes) {</span>
+<span class="fc" id="L253">			result.add(n.getName());</span>
+<span class="fc" id="L254">		}</span>
+<span class="fc" id="L255">		return result;</span>
+	}
+
+	private void addClass(long id, boolean nomatch, String name, String source,
+			MethodCoverageImpl... methods) {
+<span class="fc" id="L260">		final ClassCoverageImpl coverage = new ClassCoverageImpl(name, id,</span>
+				nomatch);
+<span class="fc" id="L262">		coverage.setSourceFileName(source);</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">		for (MethodCoverageImpl m : methods) {</span>
+<span class="fc" id="L264">			coverage.addMethod(m);</span>
+		}
+<span class="fc" id="L266">		coverageBuilder.visitCoverage(coverage);</span>
+<span class="fc" id="L267">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

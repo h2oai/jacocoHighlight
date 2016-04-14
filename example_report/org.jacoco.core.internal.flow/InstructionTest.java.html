@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>InstructionTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.flow</a> &gt; <span class="el_source">InstructionTest.java</span></div><h1>InstructionTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.flow;
+
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link Instruction}.
+ */
+<span class="fc" id="L22">public class InstructionTest {</span>
+
+	private Instruction instruction;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L28">		instruction = new Instruction(123);</span>
+<span class="fc" id="L29">	}</span>
+
+	@Test
+	public void testInit() {
+<span class="fc" id="L33">		assertEquals(123, instruction.getLine());</span>
+<span class="fc" id="L34">		assertEquals(0, instruction.getBranches());</span>
+<span class="fc" id="L35">		assertEquals(0, instruction.getCoveredBranches());</span>
+<span class="fc" id="L36">	}</span>
+
+	@Test
+	public void testAddBranch() {
+<span class="fc" id="L40">		instruction.addBranch();</span>
+<span class="fc" id="L41">		assertEquals(1, instruction.getBranches());</span>
+<span class="fc" id="L42">		instruction.addBranch();</span>
+<span class="fc" id="L43">		assertEquals(2, instruction.getBranches());</span>
+<span class="fc" id="L44">		instruction.addBranch();</span>
+<span class="fc" id="L45">		assertEquals(3, instruction.getBranches());</span>
+<span class="fc" id="L46">		assertEquals(0, instruction.getCoveredBranches());</span>
+<span class="fc" id="L47">	}</span>
+
+	@Test
+	public void testSetPredecessor() {
+<span class="fc" id="L51">		final Instruction predecessor = new Instruction(122);</span>
+<span class="fc" id="L52">		instruction.setPredecessor(predecessor);</span>
+<span class="fc" id="L53">		assertEquals(1, predecessor.getBranches());</span>
+<span class="fc" id="L54">	}</span>
+
+	@Test
+	public void testSetCovered() {
+<span class="fc" id="L58">		final Instruction predecessor = new Instruction(122);</span>
+<span class="fc" id="L59">		instruction.setPredecessor(predecessor);</span>
+<span class="fc" id="L60">		instruction.setCovered();</span>
+<span class="fc" id="L61">		assertEquals(1, instruction.getCoveredBranches());</span>
+<span class="fc" id="L62">		assertEquals(1, predecessor.getCoveredBranches());</span>
+
+<span class="fc" id="L64">		instruction.setCovered();</span>
+<span class="fc" id="L65">		assertEquals(2, instruction.getCoveredBranches());</span>
+<span class="fc" id="L66">		assertEquals(1, predecessor.getCoveredBranches());</span>
+<span class="fc" id="L67">	}</span>
+
+	@Test
+	public void testSetCoveredOnLongSequence() {
+<span class="fc" id="L71">		final Instruction first = new Instruction(0);</span>
+<span class="fc" id="L72">		Instruction next = first;</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">		for (int i = 0; i &lt; 0x10000; i++) {</span>
+<span class="fc" id="L74">			final Instruction insn = new Instruction(i);</span>
+<span class="fc" id="L75">			insn.setPredecessor(next);</span>
+<span class="fc" id="L76">			next = insn;</span>
+		}
+
+		// The implementation must not cause an StackOverflowError even on very
+		// long sequences:
+<span class="fc" id="L81">		next.setCovered();</span>
+<span class="fc" id="L82">		assertEquals(1, first.getCoveredBranches());</span>
+<span class="fc" id="L83">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>RuntimeTestBase.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.runtime</a> &gt; <span class="el_source">RuntimeTestBase.java</span></div><h1>RuntimeTestBase.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.runtime;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.jacoco.core.JaCoCo;
+import org.jacoco.core.internal.instr.InstrSupport;
+import org.jacoco.core.test.TargetLoader;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.GeneratorAdapter;
+import org.objectweb.asm.commons.Method;
+
+/**
+ * Abstract test base for {@link IRuntime} implementations.
+ */
+<span class="fc" id="L34">public abstract class RuntimeTestBase {</span>
+
+	private RuntimeData data;
+
+	private IRuntime runtime;
+
+	private TestStorage storage;
+
+	abstract IRuntime createRuntime();
+
+	@Before
+	public void setup() throws Exception {
+<span class="fc" id="L46">		data = new RuntimeData();</span>
+<span class="fc" id="L47">		runtime = createRuntime();</span>
+<span class="fc" id="L48">		runtime.startup(data);</span>
+<span class="fc" id="L49">		storage = new TestStorage();</span>
+<span class="fc" id="L50">	}</span>
+
+	@After
+	public void shutdown() {
+<span class="fc" id="L54">		runtime.shutdown();</span>
+<span class="fc" id="L55">	}</span>
+
+	@Test
+	public void testDataAccessor() throws InstantiationException,
+			IllegalAccessException {
+<span class="fc" id="L60">		ITarget t = generateAndInstantiateClass(1234);</span>
+<span class="fc" id="L61">		data.collect(storage, storage, false);</span>
+<span class="fc" id="L62">		storage.assertData(1234, t.get());</span>
+<span class="fc" id="L63">	}</span>
+
+	@Test
+	public void testNoLocalVariablesInDataAccessor()
+			throws InstantiationException, IllegalAccessException {
+<span class="fc" id="L68">		runtime.generateDataAccessor(1001, &quot;Target&quot;, 5, new MethodVisitor(</span>
+<span class="fc" id="L69">				JaCoCo.ASM_API_VERSION) {</span>
+			@Override
+			public void visitVarInsn(int opcode, int var) {
+<span class="nc" id="L72">				fail(&quot;No usage of local variables allowed.&quot;);</span>
+<span class="nc" id="L73">			}</span>
+		});
+<span class="fc" id="L75">	}</span>
+
+	@Test
+	public void testExecutionRecording() throws InstantiationException,
+			IllegalAccessException {
+<span class="fc" id="L80">		generateAndInstantiateClass(1001).a();</span>
+<span class="fc" id="L81">		data.collect(storage, storage, false);</span>
+<span class="fc" id="L82">		storage.assertSize(1);</span>
+<span class="fc" id="L83">		final boolean[] data = storage.getData(1001).getProbes();</span>
+<span class="fc" id="L84">		assertTrue(data[0]);</span>
+<span class="fc" id="L85">		assertFalse(data[1]);</span>
+<span class="fc" id="L86">	}</span>
+
+	@Test
+	public void testLoadSameClassTwice() throws InstantiationException,
+			IllegalAccessException {
+<span class="fc" id="L91">		generateAndInstantiateClass(1001).a();</span>
+<span class="fc" id="L92">		generateAndInstantiateClass(1001).b();</span>
+<span class="fc" id="L93">		data.collect(storage, storage, false);</span>
+<span class="fc" id="L94">		storage.assertSize(1);</span>
+<span class="fc" id="L95">		final boolean[] data = storage.getData(1001).getProbes();</span>
+<span class="fc" id="L96">		assertTrue(data[0]);</span>
+<span class="fc" id="L97">		assertTrue(data[1]);</span>
+<span class="fc" id="L98">	}</span>
+
+	/**
+	 * Creates a new class with the given id, loads this class and instantiates
+	 * it. The constructor of the generated class will request the probe array
+	 * from the runtime under test.
+	 */
+	private ITarget generateAndInstantiateClass(int classid)
+			throws InstantiationException, IllegalAccessException {
+
+<span class="fc" id="L108">		final String className = &quot;org/jacoco/test/targets/RuntimeTestTarget_&quot;</span>
+				+ classid;
+<span class="fc" id="L110">		Type classType = Type.getObjectType(className);</span>
+
+<span class="fc" id="L112">		final ClassWriter writer = new ClassWriter(0);</span>
+<span class="fc" id="L113">		writer.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, className, null,</span>
+				&quot;java/lang/Object&quot;,
+				new String[] { Type.getInternalName(ITarget.class) });
+
+<span class="fc" id="L117">		writer.visitField(InstrSupport.DATAFIELD_ACC,</span>
+				InstrSupport.DATAFIELD_NAME, InstrSupport.DATAFIELD_DESC, null,
+				null);
+
+		// Constructor
+<span class="fc" id="L122">		GeneratorAdapter gen = new GeneratorAdapter(writer.visitMethod(</span>
+				Opcodes.ACC_PUBLIC, &quot;&lt;init&gt;&quot;, &quot;()V&quot;, null, new String[0]),
+				Opcodes.ACC_PUBLIC, &quot;&lt;init&gt;&quot;, &quot;()V&quot;);
+<span class="fc" id="L125">		gen.visitCode();</span>
+<span class="fc" id="L126">		gen.loadThis();</span>
+<span class="fc" id="L127">		gen.invokeConstructor(Type.getType(Object.class), new Method(&quot;&lt;init&gt;&quot;,</span>
+				&quot;()V&quot;));
+<span class="fc" id="L129">		gen.loadThis();</span>
+<span class="fc" id="L130">		final int size = runtime.generateDataAccessor(classid, className, 2,</span>
+				gen);
+<span class="fc" id="L132">		gen.putStatic(classType, InstrSupport.DATAFIELD_NAME,</span>
+				Type.getObjectType(InstrSupport.DATAFIELD_DESC));
+<span class="fc" id="L134">		gen.returnValue();</span>
+<span class="fc" id="L135">		gen.visitMaxs(size + 1, 0);</span>
+<span class="fc" id="L136">		gen.visitEnd();</span>
+
+		// get()
+<span class="fc" id="L139">		gen = new GeneratorAdapter(writer.visitMethod(Opcodes.ACC_PUBLIC,</span>
+				&quot;get&quot;, &quot;()[Z&quot;, null, new String[0]), Opcodes.ACC_PUBLIC, &quot;get&quot;,
+				&quot;()[Z&quot;);
+<span class="fc" id="L142">		gen.visitCode();</span>
+<span class="fc" id="L143">		gen.getStatic(classType, InstrSupport.DATAFIELD_NAME,</span>
+				Type.getObjectType(InstrSupport.DATAFIELD_DESC));
+<span class="fc" id="L145">		gen.returnValue();</span>
+<span class="fc" id="L146">		gen.visitMaxs(1, 0);</span>
+<span class="fc" id="L147">		gen.visitEnd();</span>
+
+		// a()
+<span class="fc" id="L150">		gen = new GeneratorAdapter(writer.visitMethod(Opcodes.ACC_PUBLIC, &quot;a&quot;,</span>
+				&quot;()V&quot;, null, new String[0]), Opcodes.ACC_PUBLIC, &quot;a&quot;, &quot;()V&quot;);
+<span class="fc" id="L152">		gen.visitCode();</span>
+<span class="fc" id="L153">		gen.getStatic(classType, InstrSupport.DATAFIELD_NAME,</span>
+				Type.getObjectType(InstrSupport.DATAFIELD_DESC));
+<span class="fc" id="L155">		gen.push(0);</span>
+<span class="fc" id="L156">		gen.push(1);</span>
+<span class="fc" id="L157">		gen.arrayStore(Type.BOOLEAN_TYPE);</span>
+<span class="fc" id="L158">		gen.returnValue();</span>
+<span class="fc" id="L159">		gen.visitMaxs(3, 0);</span>
+<span class="fc" id="L160">		gen.visitEnd();</span>
+
+		// b()
+<span class="fc" id="L163">		gen = new GeneratorAdapter(writer.visitMethod(Opcodes.ACC_PUBLIC, &quot;b&quot;,</span>
+				&quot;()V&quot;, null, new String[0]), Opcodes.ACC_PUBLIC, &quot;b&quot;, &quot;()V&quot;);
+<span class="fc" id="L165">		gen.visitCode();</span>
+<span class="fc" id="L166">		gen.getStatic(classType, InstrSupport.DATAFIELD_NAME,</span>
+				Type.getObjectType(InstrSupport.DATAFIELD_DESC));
+<span class="fc" id="L168">		gen.push(1);</span>
+<span class="fc" id="L169">		gen.push(1);</span>
+<span class="fc" id="L170">		gen.arrayStore(Type.BOOLEAN_TYPE);</span>
+<span class="fc" id="L171">		gen.returnValue();</span>
+<span class="fc" id="L172">		gen.visitMaxs(3, 0);</span>
+<span class="fc" id="L173">		gen.visitEnd();</span>
+
+<span class="fc" id="L175">		writer.visitEnd();</span>
+
+<span class="fc" id="L177">		final TargetLoader loader = new TargetLoader();</span>
+<span class="fc" id="L178">		return (ITarget) loader.add(className.replace('/', '.'),</span>
+				writer.toByteArray()).newInstance();
+	}
+
+	/**
+	 * With this interface we modify and read coverage data of the generated
+	 * class.
+	 */
+<span class="fc" id="L186">	public interface ITarget {</span>
+
+		/**
+		 * Returns a reference to the probe array.
+		 * 
+		 * @return the probe array
+		 */
+		boolean[] get();
+
+		/**
+		 * The implementation will mark probe 0 as executed
+		 */
+		void a();
+
+		/**
+		 * The implementation will mark probe 1 as executed
+		 */
+		void b();
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

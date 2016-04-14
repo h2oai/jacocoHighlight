@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Target03.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.test.validation.targets</a> &gt; <span class="el_source">Target03.java</span></div><h1>Target03.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.test.validation.targets;
+
+import static org.jacoco.core.test.validation.targets.Stubs.ex;
+import static org.jacoco.core.test.validation.targets.Stubs.f;
+import static org.jacoco.core.test.validation.targets.Stubs.nop;
+
+import org.jacoco.core.test.validation.targets.Stubs.StubException;
+
+/**
+ * This target produces exception based control flow examples.
+ */
+<span class="nc" id="L23">public class Target03 implements Runnable {</span>
+
+	public void run() {
+		try {
+<span class="nc" id="L27">			implicitException();</span>
+<span class="nc" id="L28">		} catch (StubException e) {</span>
+<span class="nc" id="L29">		}</span>
+		try {
+<span class="nc" id="L31">			explicitException();</span>
+<span class="nc" id="L32">		} catch (StubException e) {</span>
+<span class="nc" id="L33">		}</span>
+<span class="nc" id="L34">		noExceptionTryCatch();</span>
+<span class="nc" id="L35">		implicitExceptionTryCatch();</span>
+<span class="nc" id="L36">		implicitExceptionTryCatchAfterCondition();</span>
+<span class="nc" id="L37">		explicitExceptionTryCatch();</span>
+<span class="nc" id="L38">		noExceptionFinally();</span>
+		try {
+<span class="nc" id="L40">			explicitExceptionFinally();</span>
+<span class="nc" id="L41">		} catch (StubException e) {</span>
+<span class="nc" id="L42">		}</span>
+		try {
+<span class="nc" id="L44">			implicitExceptionFinally();</span>
+<span class="nc" id="L45">		} catch (StubException e) {</span>
+<span class="nc" id="L46">		}</span>
+<span class="nc" id="L47">	}</span>
+
+	private void implicitException() {
+<span class="nc" id="L50">		nop(); // $line-implicitException.before$</span>
+<span class="nc" id="L51">		ex(); // $line-implicitException.exception$</span>
+<span class="nc" id="L52">		nop(); // $line-implicitException.after$</span>
+<span class="nc" id="L53">	}</span>
+
+	private void explicitException() {
+<span class="nc" id="L56">		nop(); // $line-explicitException.before$</span>
+<span class="nc" id="L57">		throw new StubException(); // $line-explicitException.throw$</span>
+	}
+
+	private void noExceptionTryCatch() {
+<span class="nc" id="L61">		nop(); // $line-noExceptionTryCatch.beforeBlock$</span>
+		try {
+<span class="nc" id="L63">			nop(); // $line-noExceptionTryCatch.tryBlock$</span>
+<span class="nc" id="L64">		} catch (StubException e) { // $line-noExceptionTryCatch.catch$</span>
+<span class="nc" id="L65">			nop(); // $line-noExceptionTryCatch.catchBlock$</span>
+<span class="nc" id="L66">		}</span>
+<span class="nc" id="L67">	}</span>
+
+	private void implicitExceptionTryCatch() {
+<span class="nc" id="L70">		nop(); // $line-implicitExceptionTryCatch.beforeBlock$</span>
+		try {
+<span class="nc" id="L72">			nop(); // $line-implicitExceptionTryCatch.before$</span>
+<span class="nc" id="L73">			ex(); // $line-implicitExceptionTryCatch.exception$</span>
+<span class="nc" id="L74">			nop(); // $line-implicitExceptionTryCatch.after$</span>
+<span class="nc" id="L75">		} catch (StubException e) { // $line-implicitExceptionTryCatch.catch$</span>
+<span class="nc" id="L76">			nop(); // $line-implicitExceptionTryCatch.catchBlock$</span>
+<span class="nc" id="L77">		}</span>
+<span class="nc" id="L78">	}</span>
+
+	private void implicitExceptionTryCatchAfterCondition() {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">		if (f()) { // $line-implicitExceptionTryCatchAfterCondition.condition$</span>
+<span class="nc" id="L82">			return;</span>
+		}
+		try {
+<span class="nc" id="L85">			ex(); // $line-implicitExceptionTryCatchAfterCondition.exception$</span>
+<span class="nc" id="L86">		} catch (StubException e) {</span>
+<span class="nc" id="L87">			nop(); // $line-implicitExceptionTryCatchAfterCondition.catchBlock$</span>
+<span class="nc" id="L88">		}</span>
+<span class="nc" id="L89">	}</span>
+
+	private void explicitExceptionTryCatch() {
+<span class="nc" id="L92">		nop(); // $line-explicitExceptionTryCatch.beforeBlock$</span>
+		try {
+<span class="nc" id="L94">			nop(); // $line-explicitExceptionTryCatch.before$</span>
+<span class="nc" id="L95">			throw new StubException(); // $line-explicitExceptionTryCatch.throw$</span>
+<span class="nc" id="L96">		} catch (StubException e) { // $line-explicitExceptionTryCatch.catch$</span>
+<span class="nc" id="L97">			nop(); // $line-explicitExceptionTryCatch.catchBlock$</span>
+		}
+<span class="nc" id="L99">	}</span>
+
+	private void noExceptionFinally() {
+<span class="nc" id="L102">		nop(); // $line-noExceptionFinally.beforeBlock$</span>
+		try {
+<span class="nc" id="L104">			nop(); // $line-noExceptionFinally.tryBlock$</span>
+		} finally { // $line-noExceptionFinallyFinally$
+<span class="nc" id="L106">			nop(); // $line-noExceptionFinally.finallyBlock$</span>
+<span class="nc" id="L107">		}</span>
+<span class="nc" id="L108">	}</span>
+
+	private void implicitExceptionFinally() {
+<span class="nc" id="L111">		nop(); // $line-implicitExceptionFinally.beforeBlock$</span>
+		try {
+<span class="nc" id="L113">			nop(); // $line-implicitExceptionFinally.before$</span>
+<span class="nc" id="L114">			ex(); // $line-implicitExceptionFinally.exception$</span>
+<span class="nc" id="L115">			nop(); // $line-implicitExceptionFinally.after$</span>
+		} finally { // $line-implicitExceptionFinally.finally$
+<span class="nc" id="L117">			nop(); // $line-implicitExceptionFinally.finallyBlock$</span>
+<span class="nc" id="L118">		}</span>
+<span class="nc" id="L119">	}</span>
+
+	private void explicitExceptionFinally() {
+<span class="nc" id="L122">		nop(); // $line-explicitExceptionFinally.beforeBlock$</span>
+		try {
+<span class="nc" id="L124">			nop(); // $line-explicitExceptionFinally.before$</span>
+<span class="nc" id="L125">			throw new StubException(); // $line-explicitExceptionFinally.throw$</span>
+		} finally { // $line-explicitExceptionFinally.finally$
+<span class="nc" id="L127">			nop(); // $line-explicitExceptionFinally.finallyBlock$</span>
+		}
+	}
+
+	public static void main(String[] args) {
+<span class="nc" id="L132">		new Target03().run();</span>
+<span class="nc" id="L133">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MethodProbesAdapterTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.flow</a> &gt; <span class="el_source">MethodProbesAdapterTest.java</span></div><h1>MethodProbesAdapterTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.flow;
+
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+
+import org.jacoco.core.instr.MethodRecorder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.AnalyzerAdapter;
+import org.objectweb.asm.util.Printer;
+
+/**
+ * Unit tests for {@link MethodProbesAdapter}.
+ */
+<span class="fc" id="L31">public class MethodProbesAdapterTest implements IProbeIdGenerator {</span>
+
+	private Label label;
+
+	private int id;
+
+	private MethodRecorder expected, actual;
+
+	private MethodProbesVisitor expectedVisitor;
+
+	private MethodVisitor adapter;
+
+	private IFrame frame;
+
+<span class="fc" id="L45">	private static class TraceAdapter extends MethodProbesVisitor {</span>
+
+		private final Printer printer;
+
+		TraceAdapter(MethodRecorder recorder) {
+<span class="fc" id="L50">			super(recorder.getVisitor());</span>
+<span class="fc" id="L51">			printer = recorder.getPrinter();</span>
+<span class="fc" id="L52">		}</span>
+
+		@Override
+		public void visitProbe(int probeId) {
+<span class="fc" id="L56">			rec(&quot;visitProbe&quot;, Integer.valueOf(probeId));</span>
+<span class="fc" id="L57">		}</span>
+
+		@Override
+		public void visitInsnWithProbe(int opcode, int probeId) {
+<span class="fc" id="L61">			rec(&quot;visitInsnWithProbe&quot;, Integer.valueOf(opcode),</span>
+					Integer.valueOf(probeId));
+<span class="fc" id="L63">		}</span>
+
+		@Override
+		public void visitJumpInsnWithProbe(int opcode, Label label,
+				int probeId, IFrame frame) {
+<span class="fc" id="L68">			rec(&quot;visitJumpInsnWithProbe&quot;, Integer.valueOf(opcode), label,</span>
+					Integer.valueOf(probeId));
+<span class="fc" id="L70">			frame.accept(this);</span>
+<span class="fc" id="L71">		}</span>
+
+		@Override
+		public void visitTableSwitchInsnWithProbes(int min, int max,
+				Label dflt, Label[] labels, IFrame frame) {
+<span class="fc" id="L76">			rec(&quot;visitTableSwitchInsnWithProbes&quot;, Integer.valueOf(min),</span>
+					Integer.valueOf(max), dflt, labels);
+<span class="fc" id="L78">			frame.accept(this);</span>
+<span class="fc" id="L79">		}</span>
+
+		@Override
+		public void visitLookupSwitchInsnWithProbes(Label dflt, int[] keys,
+				Label[] labels, IFrame frame) {
+<span class="fc" id="L84">			rec(&quot;visitLookupSwitchInsnWithProbes&quot;, dflt, keys, labels);</span>
+<span class="fc" id="L85">			frame.accept(this);</span>
+<span class="fc" id="L86">		}</span>
+
+		private void rec(String name, Object... args) {
+<span class="fc" id="L89">			printer.text.add(name + Arrays.asList(args));</span>
+<span class="fc" id="L90">		}</span>
+
+	}
+
+	@Before
+	public void setup() {
+<span class="fc" id="L96">		label = new Label();</span>
+<span class="fc" id="L97">		id = 1000;</span>
+<span class="fc" id="L98">		expected = new MethodRecorder();</span>
+<span class="fc" id="L99">		expectedVisitor = new TraceAdapter(expected);</span>
+<span class="fc" id="L100">		actual = new MethodRecorder();</span>
+<span class="fc" id="L101">		MethodProbesVisitor actualVisitor = new TraceAdapter(actual);</span>
+<span class="fc" id="L102">		MethodProbesAdapter probesAdapter = new MethodProbesAdapter(</span>
+				actualVisitor, this);
+<span class="fc" id="L104">		final AnalyzerAdapter analyzer = new AnalyzerAdapter(&quot;Foo&quot;, 0, &quot;doit&quot;,</span>
+				&quot;()V&quot;, probesAdapter);
+<span class="fc" id="L106">		probesAdapter.setAnalyzer(analyzer);</span>
+<span class="fc" id="L107">		adapter = analyzer;</span>
+<span class="fc" id="L108">		frame = new IFrame() {</span>
+
+			public void accept(MethodVisitor mv) {
+<span class="fc" id="L111">			}</span>
+		};
+<span class="fc" id="L113">	}</span>
+
+	@After
+	public void verify() {
+<span class="fc" id="L117">		assertEquals(expected, actual);</span>
+<span class="fc" id="L118">	}</span>
+
+	@Test
+	public void testVisitProbe1() {
+<span class="fc" id="L122">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L123">		LabelInfo.setSuccessor(label);</span>
+
+<span class="fc" id="L125">		adapter.visitLabel(label);</span>
+
+<span class="fc" id="L127">		expectedVisitor.visitProbe(1000);</span>
+<span class="fc" id="L128">		expectedVisitor.visitLabel(label);</span>
+<span class="fc" id="L129">	}</span>
+
+	@Test
+	public void testVisitProbe2() {
+<span class="fc" id="L133">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L134">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L136">		adapter.visitLabel(label);</span>
+
+<span class="fc" id="L138">		expectedVisitor.visitLabel(label);</span>
+<span class="fc" id="L139">	}</span>
+
+	@Test
+	public void testVisitProbe3() {
+<span class="fc" id="L143">		adapter.visitLabel(label);</span>
+
+<span class="fc" id="L145">		expectedVisitor.visitLabel(label);</span>
+<span class="fc" id="L146">	}</span>
+
+	@Test
+	public void testVisitInsn1() {
+<span class="fc" id="L150">		adapter.visitInsn(Opcodes.RETURN);</span>
+
+<span class="fc" id="L152">		expectedVisitor.visitInsnWithProbe(Opcodes.RETURN, 1000);</span>
+<span class="fc" id="L153">	}</span>
+
+	@Test
+	public void testVisitInsn2() {
+<span class="fc" id="L157">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L158">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L159">		adapter.visitInsn(Opcodes.IADD);</span>
+
+<span class="fc" id="L161">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L162">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L163">		expectedVisitor.visitInsn(Opcodes.IADD);</span>
+<span class="fc" id="L164">	}</span>
+
+	@Test
+	public void testVisitJumpInsn1() {
+<span class="fc" id="L168">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L169">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L171">		adapter.visitJumpInsn(Opcodes.GOTO, label);</span>
+
+<span class="fc" id="L173">		expectedVisitor</span>
+				.visitJumpInsnWithProbe(Opcodes.GOTO, label, 1000, frame);
+<span class="fc" id="L175">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L177">	}</span>
+
+	@Test
+	public void testVisitJumpInsn2() {
+<span class="fc" id="L181">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L182">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L184">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L185">		adapter.visitJumpInsn(Opcodes.IFLT, label);</span>
+
+<span class="fc" id="L187">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L188">		expectedVisitor</span>
+				.visitJumpInsnWithProbe(Opcodes.IFLT, label, 1000, frame);
+<span class="fc" id="L190">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L192">	}</span>
+
+	@Test
+	public void testVisitJumpInsn3() {
+<span class="fc" id="L196">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L197">		adapter.visitJumpInsn(Opcodes.IFLT, label);</span>
+
+<span class="fc" id="L199">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L200">		expectedVisitor.visitJumpInsn(Opcodes.IFLT, label);</span>
+<span class="fc" id="L201">	}</span>
+
+	@Test
+	public void testVisitJumpInsn4() {
+<span class="fc" id="L205">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L206">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L208">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L209">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L210">		adapter.visitJumpInsn(Opcodes.IF_ICMPEQ, label);</span>
+
+<span class="fc" id="L212">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L213">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L214">		expectedVisitor.visitJumpInsnWithProbe(Opcodes.IF_ICMPEQ, label, 1000,</span>
+				frame);
+<span class="fc" id="L216">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L218">	}</span>
+
+	@Test
+	public void testVisitLookupSwitchInsn1() {
+<span class="fc" id="L222">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L223">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L225">		final int[] keys = new int[] { 0, 1 };</span>
+<span class="fc" id="L226">		final Label[] labels = new Label[] { label, label };</span>
+<span class="fc" id="L227">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L228">		adapter.visitLookupSwitchInsn(label, keys, labels);</span>
+
+<span class="fc" id="L230">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L231">		expectedVisitor.visitLookupSwitchInsnWithProbes(label, keys, labels,</span>
+				frame);
+<span class="fc" id="L233">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L235">		assertEquals(1000, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L236">	}</span>
+
+	@Test
+	public void testVisitLookupSwitchInsn2() {
+<span class="fc" id="L240">		Label label2 = new Label();</span>
+<span class="fc" id="L241">		LabelInfo.setTarget(label2);</span>
+<span class="fc" id="L242">		LabelInfo.setTarget(label2);</span>
+
+<span class="fc" id="L244">		final int[] keys = new int[] { 0, 1 };</span>
+<span class="fc" id="L245">		final Label[] labels = new Label[] { label2, label };</span>
+<span class="fc" id="L246">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L247">		adapter.visitLookupSwitchInsn(label, keys, labels);</span>
+
+<span class="fc" id="L249">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L250">		expectedVisitor.visitLookupSwitchInsnWithProbes(label, keys, labels,</span>
+				frame);
+<span class="fc" id="L252">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L254">		assertEquals(LabelInfo.NO_PROBE, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L255">		assertEquals(1000, LabelInfo.getProbeId(label2));</span>
+<span class="fc" id="L256">	}</span>
+
+	@Test
+	public void testVisitLookupSwitchInsn3() {
+<span class="fc" id="L260">		final int[] keys = new int[] { 0, 1 };</span>
+<span class="fc" id="L261">		final Label[] labels = new Label[] { label, label };</span>
+<span class="fc" id="L262">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L263">		adapter.visitLookupSwitchInsn(label, keys, labels);</span>
+
+<span class="fc" id="L265">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L266">		expectedVisitor.visitLookupSwitchInsn(label, keys, labels);</span>
+<span class="fc" id="L267">	}</span>
+
+	@Test
+	public void testVisitTableSwitchInsn1() {
+<span class="fc" id="L271">		LabelInfo.setTarget(label);</span>
+<span class="fc" id="L272">		LabelInfo.setTarget(label);</span>
+
+<span class="fc" id="L274">		final Label[] labels = new Label[] { label, label };</span>
+<span class="fc" id="L275">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L276">		adapter.visitTableSwitchInsn(0, 1, label, labels);</span>
+
+<span class="fc" id="L278">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L279">		expectedVisitor.visitTableSwitchInsnWithProbes(0, 1, label, labels,</span>
+				frame);
+<span class="fc" id="L281">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L283">		assertEquals(1000, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L284">	}</span>
+
+	@Test
+	public void testVisitTableSwitchInsn2() {
+<span class="fc" id="L288">		Label label2 = new Label();</span>
+<span class="fc" id="L289">		LabelInfo.setTarget(label2);</span>
+<span class="fc" id="L290">		LabelInfo.setTarget(label2);</span>
+
+<span class="fc" id="L292">		final Label[] labels = new Label[] { label2, label };</span>
+<span class="fc" id="L293">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L294">		adapter.visitTableSwitchInsn(0, 1, label, labels);</span>
+
+<span class="fc" id="L296">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L297">		expectedVisitor.visitTableSwitchInsnWithProbes(0, 1, label, labels,</span>
+				frame);
+<span class="fc" id="L299">		expectedVisitor.visitFrame(Opcodes.F_FULL, 1, new Object[] { &quot;Foo&quot; },</span>
+				0, null);
+<span class="fc" id="L301">		assertEquals(LabelInfo.NO_PROBE, LabelInfo.getProbeId(label));</span>
+<span class="fc" id="L302">		assertEquals(1000, LabelInfo.getProbeId(label2));</span>
+<span class="fc" id="L303">	}</span>
+
+	@Test
+	public void testVisitTableSwitchInsn3() {
+<span class="fc" id="L307">		final Label[] labels = new Label[] { label, label };</span>
+<span class="fc" id="L308">		adapter.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L309">		adapter.visitTableSwitchInsn(0, 1, label, labels);</span>
+
+<span class="fc" id="L311">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L312">		expectedVisitor.visitTableSwitchInsn(0, 1, label, labels);</span>
+<span class="fc" id="L313">	}</span>
+
+	@Test
+	public void testVisitTryCatchBlockNoProbe() {
+<span class="fc" id="L317">		Label start = new Label();</span>
+<span class="fc" id="L318">		Label end = new Label();</span>
+<span class="fc" id="L319">		Label handler = new Label();</span>
+
+<span class="fc" id="L321">		adapter.visitTryCatchBlock(start, end, handler, &quot;java/lang/Exception&quot;);</span>
+<span class="fc" id="L322">		adapter.visitLabel(start);</span>
+
+<span class="fc" id="L324">		expectedVisitor.visitTryCatchBlock(start, end, handler,</span>
+				&quot;java/lang/Exception&quot;);
+<span class="fc" id="L326">		expectedVisitor.visitLabel(start);</span>
+<span class="fc" id="L327">	}</span>
+
+	@Test
+	public void testVisitTryCatchBlockWithProbe() {
+<span class="fc" id="L331">		Label target = new Label();</span>
+<span class="fc" id="L332">		LabelInfo.setSuccessor(target);</span>
+<span class="fc" id="L333">		LabelInfo.setTarget(target);</span>
+<span class="fc" id="L334">		Label end = new Label();</span>
+<span class="fc" id="L335">		Label handler = new Label();</span>
+<span class="fc" id="L336">		Label start = new Label();</span>
+
+<span class="fc" id="L338">		adapter.visitTryCatchBlock(target, end, handler, &quot;java/lang/Exception&quot;);</span>
+<span class="fc" id="L339">		adapter.visitLabel(target);</span>
+
+<span class="fc" id="L341">		expectedVisitor.visitTryCatchBlock(start, end, handler,</span>
+				&quot;java/lang/Exception&quot;);
+<span class="fc" id="L343">		expectedVisitor.visitLabel(start);</span>
+<span class="fc" id="L344">		expectedVisitor.visitProbe(1000);</span>
+<span class="fc" id="L345">		expectedVisitor.visitLabel(target);</span>
+<span class="fc" id="L346">	}</span>
+
+	@Test
+	public void testVisitMultipleTryCatchBlocksWithProbe() {
+<span class="fc" id="L350">		Label target = new Label();</span>
+<span class="fc" id="L351">		LabelInfo.setSuccessor(target);</span>
+<span class="fc" id="L352">		LabelInfo.setTarget(target);</span>
+<span class="fc" id="L353">		Label end = new Label();</span>
+<span class="fc" id="L354">		Label handler1 = new Label();</span>
+<span class="fc" id="L355">		Label handler2 = new Label();</span>
+<span class="fc" id="L356">		Label start = new Label();</span>
+
+<span class="fc" id="L358">		adapter.visitTryCatchBlock(target, end, handler1, &quot;java/lang/Exception&quot;);</span>
+<span class="fc" id="L359">		adapter.visitTryCatchBlock(target, end, handler2, &quot;java/io/IOException&quot;);</span>
+<span class="fc" id="L360">		adapter.visitLabel(target);</span>
+
+<span class="fc" id="L362">		expectedVisitor.visitTryCatchBlock(start, end, handler1,</span>
+				&quot;java/lang/Exception&quot;);
+<span class="fc" id="L364">		expectedVisitor.visitTryCatchBlock(start, end, handler2,</span>
+				&quot;java/io/IOException&quot;);
+<span class="fc" id="L366">		expectedVisitor.visitLabel(start);</span>
+<span class="fc" id="L367">		expectedVisitor.visitProbe(1000);</span>
+<span class="fc" id="L368">		expectedVisitor.visitLabel(target);</span>
+<span class="fc" id="L369">	}</span>
+
+	// === IProbeIdGenerator ===
+
+	public int nextId() {
+<span class="fc" id="L374">		return id++;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

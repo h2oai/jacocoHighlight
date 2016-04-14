@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MethodCoverageImplTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.analysis</a> &gt; <span class="el_source">MethodCoverageImplTest.java</span></div><h1>MethodCoverageImplTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.analysis;
+
+import static org.junit.Assert.assertEquals;
+
+import org.jacoco.core.analysis.ICoverageNode;
+import org.junit.Test;
+
+/**
+ * Unit test for {@link MethodCoverageImpl}.
+ */
+<span class="fc" id="L22">public class MethodCoverageImplTest {</span>
+
+	@Test
+	public void testProperties() {
+		// Example: java.util.Collections.emptySet()
+<span class="fc" id="L27">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;emptySet&quot;,</span>
+				&quot;()Ljava/util/Set;&quot;,
+				&quot;&lt;T:Ljava/lang/Object;&gt;()Ljava/util/Set&lt;TT;&gt;;&quot;);
+<span class="fc" id="L30">		assertEquals(ICoverageNode.ElementType.METHOD, node.getElementType());</span>
+<span class="fc" id="L31">		assertEquals(&quot;emptySet&quot;, node.getName());</span>
+<span class="fc" id="L32">		assertEquals(&quot;()Ljava/util/Set;&quot;, node.getDesc());</span>
+<span class="fc" id="L33">		assertEquals(&quot;&lt;T:Ljava/lang/Object;&gt;()Ljava/util/Set&lt;TT;&gt;;&quot;,</span>
+				node.getSignature());
+<span class="fc" id="L35">	}</span>
+
+	@Test
+	public void testEmptyMethod() {
+<span class="fc" id="L39">		ICoverageNode node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+
+<span class="fc" id="L41">		assertEquals(CounterImpl.COUNTER_0_0, node.getInstructionCounter());</span>
+<span class="fc" id="L42">		assertEquals(CounterImpl.COUNTER_0_0, node.getBranchCounter());</span>
+<span class="fc" id="L43">		assertEquals(CounterImpl.COUNTER_0_0, node.getLineCounter());</span>
+<span class="fc" id="L44">		assertEquals(CounterImpl.COUNTER_0_0, node.getComplexityCounter());</span>
+<span class="fc" id="L45">		assertEquals(CounterImpl.COUNTER_0_0, node.getMethodCounter());</span>
+<span class="fc" id="L46">		assertEquals(CounterImpl.COUNTER_0_0, node.getClassCounter());</span>
+<span class="fc" id="L47">	}</span>
+
+	@Test
+	public void testIncrementMissedInstructions() {
+<span class="fc" id="L51">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L52">		node.increment(CounterImpl.getInstance(25, 0), CounterImpl.COUNTER_0_0,</span>
+				3);
+<span class="fc" id="L54">		node.incrementMethodCounter();</span>
+<span class="fc" id="L55">		assertEquals(CounterImpl.COUNTER_1_0, node.getMethodCounter());</span>
+<span class="fc" id="L56">		assertEquals(CounterImpl.COUNTER_1_0, node.getComplexityCounter());</span>
+<span class="fc" id="L57">	}</span>
+
+	@Test
+	public void testIncrementCoveredInstructions() {
+<span class="fc" id="L61">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L62">		node.increment(CounterImpl.getInstance(12, 13),</span>
+				CounterImpl.COUNTER_0_0, 3);
+<span class="fc" id="L64">		node.incrementMethodCounter();</span>
+<span class="fc" id="L65">		assertEquals(CounterImpl.COUNTER_0_1, node.getMethodCounter());</span>
+<span class="fc" id="L66">		assertEquals(CounterImpl.COUNTER_0_1, node.getComplexityCounter());</span>
+<span class="fc" id="L67">	}</span>
+
+	@Test
+	public void testIncrementComplexity1() {
+<span class="fc" id="L71">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L72">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.COUNTER_0_0, 3);</span>
+<span class="fc" id="L73">		assertEquals(CounterImpl.COUNTER_0_0, node.getComplexityCounter());</span>
+<span class="fc" id="L74">	}</span>
+
+	@Test
+	public void testIncrementComplexity2() {
+<span class="fc" id="L78">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L79">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(2, 0),</span>
+				3);
+<span class="fc" id="L81">		assertEquals(CounterImpl.getInstance(1, 0), node.getComplexityCounter());</span>
+<span class="fc" id="L82">	}</span>
+
+	@Test
+	public void testIncrementComplexity3() {
+<span class="fc" id="L86">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L87">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(1, 1),</span>
+				3);
+<span class="fc" id="L89">		assertEquals(CounterImpl.getInstance(1, 0), node.getComplexityCounter());</span>
+<span class="fc" id="L90">	}</span>
+
+	@Test
+	public void testIncrementComplexity4() {
+<span class="fc" id="L94">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L95">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(0, 2),</span>
+				3);
+<span class="fc" id="L97">		assertEquals(CounterImpl.getInstance(0, 1), node.getComplexityCounter());</span>
+<span class="fc" id="L98">	}</span>
+
+	@Test
+	public void testIncrementComplexity5() {
+<span class="fc" id="L102">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L103">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(3, 0),</span>
+				3);
+<span class="fc" id="L105">		assertEquals(CounterImpl.getInstance(2, 0), node.getComplexityCounter());</span>
+<span class="fc" id="L106">	}</span>
+
+	@Test
+	public void testIncrementComplexity6() {
+<span class="fc" id="L110">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L111">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(2, 1),</span>
+				3);
+<span class="fc" id="L113">		assertEquals(CounterImpl.getInstance(2, 0), node.getComplexityCounter());</span>
+<span class="fc" id="L114">	}</span>
+
+	@Test
+	public void testIncrementComplexity7() {
+<span class="fc" id="L118">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L119">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(1, 2),</span>
+				3);
+<span class="fc" id="L121">		assertEquals(CounterImpl.getInstance(1, 1), node.getComplexityCounter());</span>
+<span class="fc" id="L122">	}</span>
+
+	@Test
+	public void testIncrementComplexity8() {
+<span class="fc" id="L126">		MethodCoverageImpl node = new MethodCoverageImpl(&quot;sample&quot;, &quot;()V&quot;, null);</span>
+<span class="fc" id="L127">		node.increment(CounterImpl.COUNTER_0_0, CounterImpl.getInstance(0, 3),</span>
+				3);
+<span class="fc" id="L129">		assertEquals(CounterImpl.getInstance(0, 2), node.getComplexityCounter());</span>
+<span class="fc" id="L130">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

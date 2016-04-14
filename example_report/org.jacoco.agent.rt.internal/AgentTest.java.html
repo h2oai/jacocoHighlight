@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AgentTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.agent.rt.internal</a> &gt; <span class="el_source">AgentTest.java</span></div><h1>AgentTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Evgeny Mandrikov - initial API and implementation
+ *
+ *******************************************************************************/
+package org.jacoco.agent.rt.internal;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
+import org.jacoco.agent.rt.internal.output.IAgentOutput;
+import org.jacoco.agent.rt.internal.output.FileOutput;
+import org.jacoco.agent.rt.internal.output.NoneOutput;
+import org.jacoco.agent.rt.internal.output.TcpClientOutput;
+import org.jacoco.agent.rt.internal.output.TcpServerOutput;
+import org.jacoco.core.JaCoCo;
+import org.jacoco.core.data.ExecutionDataReader;
+import org.jacoco.core.data.ExecutionDataStore;
+import org.jacoco.core.data.SessionInfoStore;
+import org.jacoco.core.runtime.AgentOptions;
+import org.jacoco.core.runtime.AgentOptions.OutputMode;
+import org.jacoco.core.runtime.RuntimeData;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * Unit tests for {@link Agent}.
+ */
+<span class="fc" id="L50">public class AgentTest implements IExceptionLogger {</span>
+
+<span class="fc" id="L52">	@Rule</span>
+	public TemporaryFolder folder = new TemporaryFolder();
+
+	private AgentOptions options;
+	private File execfile;
+
+	private Exception exception;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L62">		options = new AgentOptions();</span>
+<span class="fc" id="L63">		execfile = new File(folder.getRoot(), &quot;jacoco.exec&quot;);</span>
+<span class="fc" id="L64">		options.setOutput(OutputMode.file);</span>
+<span class="fc" id="L65">		options.setDestfile(execfile.getAbsolutePath());</span>
+<span class="fc" id="L66">	}</span>
+
+	@Test
+	public void testCreateController() {
+<span class="fc" id="L70">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L72">		options.setOutput(OutputMode.file);</span>
+<span class="fc" id="L73">		assertEquals(FileOutput.class, agent.createAgentOutput()</span>
+				.getClass());
+
+<span class="fc" id="L76">		options.setOutput(OutputMode.tcpserver);</span>
+<span class="fc" id="L77">		assertEquals(TcpServerOutput.class, agent.createAgentOutput()</span>
+				.getClass());
+
+<span class="fc" id="L80">		options.setOutput(OutputMode.tcpclient);</span>
+<span class="fc" id="L81">		assertEquals(TcpClientOutput.class, agent.createAgentOutput()</span>
+				.getClass());
+
+<span class="fc" id="L84">		options.setOutput(OutputMode.none);</span>
+<span class="fc" id="L85">		assertEquals(NoneOutput.class, agent.createAgentOutput()</span>
+				.getClass());
+<span class="fc" id="L87">	}</span>
+
+	@Test
+	public void testStartupShutdown() throws Exception {
+<span class="fc" id="L91">		options.setSessionId(&quot;testsession&quot;);</span>
+<span class="fc" id="L92">		Agent agent = new Agent(options, this);</span>
+<span class="fc" id="L93">		agent.startup();</span>
+
+<span class="fc" id="L95">		assertEquals(&quot;testsession&quot;, agent.getData().getSessionId());</span>
+
+<span class="fc" id="L97">		agent.shutdown();</span>
+
+<span class="fc" id="L99">		assertTrue(execfile.isFile());</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">		assertTrue(execfile.length() &gt; 0);</span>
+<span class="fc" id="L101">		assertNull(exception);</span>
+<span class="fc" id="L102">	}</span>
+
+	@Test
+	public void testShutdownWithException() throws Exception {
+<span class="fc" id="L106">		final Exception expected = new Exception();</span>
+<span class="fc" id="L107">		Agent agent = new Agent(options, this) {</span>
+			@Override
+			IAgentOutput createAgentOutput() {
+<span class="fc" id="L110">				return new IAgentOutput() {</span>
+					public void startup(AgentOptions options, RuntimeData data) {
+<span class="fc" id="L112">					}</span>
+
+					public void shutdown() throws Exception {
+<span class="fc" id="L115">						throw expected;</span>
+					}
+
+					public void writeExecutionData(boolean reset) {
+<span class="fc" id="L119">					}</span>
+				};
+			}
+		};
+<span class="fc" id="L123">		agent.startup();</span>
+
+<span class="fc" id="L125">		agent.shutdown();</span>
+
+<span class="fc" id="L127">		assertSame(expected, exception);</span>
+<span class="fc" id="L128">	}</span>
+
+	@Test
+	public void testNoSessionId() throws Exception {
+<span class="fc" id="L132">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L134">		final String defaultId = agent.getData().getSessionId();</span>
+
+<span class="fc" id="L136">		agent.startup();</span>
+
+<span class="fc" id="L138">		assertFalse(defaultId.equals(agent.getData().getSessionId()));</span>
+<span class="fc" id="L139">		assertNull(exception);</span>
+<span class="fc" id="L140">	}</span>
+
+	@Test
+	public void testNoDumpOnExit() throws Exception {
+<span class="fc" id="L144">		options.setDumpOnExit(false);</span>
+<span class="fc" id="L145">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L147">		agent.startup();</span>
+<span class="fc" id="L148">		agent.shutdown();</span>
+
+<span class="fc" id="L150">		assertEquals(0, execfile.length());</span>
+<span class="fc" id="L151">		assertNull(exception);</span>
+<span class="fc" id="L152">	}</span>
+
+	@Test
+	public void testInvalidExecFile() throws Exception {
+<span class="fc" id="L156">		options.setDestfile(folder.getRoot().getAbsolutePath());</span>
+<span class="fc" id="L157">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L159">		agent.startup();</span>
+
+<span class="fc" id="L161">		assertTrue(exception instanceof IOException);</span>
+<span class="fc" id="L162">	}</span>
+
+	@Test
+	public void testGetVersion() {
+<span class="fc" id="L166">		Agent agent = new Agent(options, this);</span>
+<span class="fc" id="L167">		assertEquals(JaCoCo.VERSION, agent.getVersion());</span>
+<span class="fc" id="L168">	}</span>
+
+	@Test
+	public void testGetSetSessionId() throws IOException {
+<span class="fc" id="L172">		Agent agent = new Agent(options, this);</span>
+<span class="fc" id="L173">		agent.startup();</span>
+<span class="fc" id="L174">		agent.setSessionId(&quot;agenttestid&quot;);</span>
+<span class="fc" id="L175">		assertEquals(&quot;agenttestid&quot;, agent.getSessionId());</span>
+
+<span class="fc" id="L177">		SessionInfoStore sessionStore = new SessionInfoStore();</span>
+<span class="fc" id="L178">		ExecutionDataReader reader = new ExecutionDataReader(</span>
+				new ByteArrayInputStream(agent.getExecutionData(false)));
+<span class="fc" id="L180">		reader.setSessionInfoVisitor(sessionStore);</span>
+<span class="fc" id="L181">		reader.read();</span>
+<span class="fc" id="L182">		assertEquals(&quot;agenttestid&quot;, sessionStore.getInfos().get(0).getId());</span>
+<span class="fc" id="L183">	}</span>
+
+	@Test
+	public void testReset() {
+<span class="fc" id="L187">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L189">		boolean[] probes = agent.getData()</span>
+				.getExecutionData(Long.valueOf(0x12345678), &quot;Foo&quot;, 1)
+				.getProbes();
+<span class="fc" id="L192">		probes[0] = true;</span>
+
+<span class="fc" id="L194">		agent.reset();</span>
+
+<span class="fc" id="L196">		assertFalse(probes[0]);</span>
+<span class="fc" id="L197">	}</span>
+
+	@Test
+	public void testGetExecutionData() throws IOException {
+<span class="fc" id="L201">		options.setSessionId(&quot;agenttestid&quot;);</span>
+<span class="fc" id="L202">		Agent agent = new Agent(options, this);</span>
+<span class="fc" id="L203">		agent.startup();</span>
+
+<span class="fc" id="L205">		boolean[] probes = agent.getData()</span>
+				.getExecutionData(Long.valueOf(0x12345678), &quot;Foo&quot;, 1)
+				.getProbes();
+<span class="fc" id="L208">		probes[0] = true;</span>
+
+<span class="fc" id="L210">		byte[] data = agent.getExecutionData(true);</span>
+
+		// ensure reset has been executed
+<span class="fc" id="L213">		assertFalse(probes[0]);</span>
+
+<span class="fc" id="L215">		ExecutionDataStore execStore = new ExecutionDataStore();</span>
+<span class="fc" id="L216">		SessionInfoStore sessionStore = new SessionInfoStore();</span>
+
+<span class="fc" id="L218">		ExecutionDataReader reader = new ExecutionDataReader(</span>
+				new ByteArrayInputStream(data));
+<span class="fc" id="L220">		reader.setExecutionDataVisitor(execStore);</span>
+<span class="fc" id="L221">		reader.setSessionInfoVisitor(sessionStore);</span>
+<span class="fc" id="L222">		reader.read();</span>
+
+<span class="fc" id="L224">		assertEquals(&quot;Foo&quot;, execStore.get(0x12345678).getName());</span>
+<span class="fc" id="L225">		assertEquals(1, sessionStore.getInfos().size());</span>
+<span class="fc" id="L226">		assertEquals(&quot;agenttestid&quot;, sessionStore.getInfos().get(0).getId());</span>
+<span class="fc" id="L227">	}</span>
+
+	@Test
+	public void testDump() throws Exception {
+<span class="fc" id="L231">		final boolean[] called = new boolean[1];</span>
+<span class="fc" id="L232">		Agent agent = new Agent(options, this) {</span>
+			@Override
+			IAgentOutput createAgentOutput() {
+<span class="fc" id="L235">				return new IAgentOutput() {</span>
+					public void startup(AgentOptions options, RuntimeData data) {
+<span class="fc" id="L237">					}</span>
+
+					public void shutdown() throws Exception {
+<span class="nc" id="L240">					}</span>
+
+					public void writeExecutionData(boolean reset) {
+<span class="fc" id="L243">						assertTrue(reset);</span>
+<span class="fc" id="L244">						called[0] = true;</span>
+<span class="fc" id="L245">					}</span>
+				};
+			}
+		};
+<span class="fc" id="L249">		agent.startup();</span>
+
+<span class="fc" id="L251">		agent.dump(true);</span>
+
+<span class="fc" id="L253">		assertTrue(called[0]);</span>
+<span class="fc" id="L254">	}</span>
+
+	@Test
+	public void testJmx() throws Exception {
+<span class="fc" id="L258">		options.setJmx(true);</span>
+<span class="fc" id="L259">		Agent agent = new Agent(options, this);</span>
+
+<span class="fc" id="L261">		agent.startup();</span>
+
+<span class="fc" id="L263">		ObjectName objectName = new ObjectName(&quot;org.jacoco:type=Runtime&quot;);</span>
+<span class="fc" id="L264">		final MBeanServer server = ManagementFactory.getPlatformMBeanServer();</span>
+<span class="fc" id="L265">		assertEquals(JaCoCo.VERSION, server.getAttribute(objectName, &quot;Version&quot;));</span>
+
+<span class="fc" id="L267">		agent.shutdown();</span>
+
+		try {
+<span class="nc" id="L270">			server.getMBeanInfo(objectName);</span>
+<span class="nc" id="L271">			fail(&quot;InstanceNotFoundException expected&quot;);</span>
+<span class="fc" id="L272">		} catch (InstanceNotFoundException expected) {</span>
+<span class="nc" id="L273">		}</span>
+<span class="fc" id="L274">	}</span>
+
+	@Test(expected = InstanceNotFoundException.class)
+	public void testNoJmx() throws Exception {
+<span class="fc" id="L278">		Agent agent = new Agent(options, this);</span>
+<span class="fc" id="L279">		agent.startup();</span>
+
+<span class="fc" id="L281">		ObjectName objectName = new ObjectName(&quot;org.jacoco:type=Runtime&quot;);</span>
+<span class="nc" id="L282">		ManagementFactory.getPlatformMBeanServer().getMBeanInfo(objectName);</span>
+<span class="nc" id="L283">	}</span>
+
+	// === IExceptionLogger ===
+
+	public void logExeption(Exception ex) {
+<span class="fc" id="L288">		exception = ex;</span>
+<span class="fc" id="L289">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

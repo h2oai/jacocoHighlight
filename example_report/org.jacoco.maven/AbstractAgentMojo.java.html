@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AbstractAgentMojo.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.maven</a> &gt; <span class="el_source">AbstractAgentMojo.java</span></div><h1>AbstractAgentMojo.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Evgeny Mandrikov - initial API and implementation
+ *
+ *******************************************************************************/
+package org.jacoco.maven;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.maven.artifact.Artifact;
+import org.codehaus.plexus.util.StringUtils;
+import org.jacoco.core.runtime.AgentOptions;
+
+/**
+ * Base class for preparing a property pointing to the JaCoCo runtime agent that
+ * can be passed as a VM argument to the application under test.
+ */
+<span class="nc" id="L26">public abstract class AbstractAgentMojo extends AbstractJacocoMojo {</span>
+
+	/**
+	 * Name of the JaCoCo Agent artifact.
+	 */
+	static final String AGENT_ARTIFACT_NAME = &quot;org.jacoco:org.jacoco.agent&quot;;
+	/**
+	 * Name of the property used in maven-osgi-test-plugin.
+	 */
+	static final String TYCHO_ARG_LINE = &quot;tycho.testArgLine&quot;;
+	/**
+	 * Name of the property used in maven-surefire-plugin.
+	 */
+	static final String SUREFIRE_ARG_LINE = &quot;argLine&quot;;
+	/**
+	 * Map of plugin artifacts.
+	 * 
+	 * @parameter property=&quot;plugin.artifactMap&quot;
+	 * @required
+	 * @readonly
+	 */
+	Map&lt;String, Artifact&gt; pluginArtifactMap;
+	/**
+	 * Allows to specify property which will contains settings for JaCoCo Agent.
+	 * If not specified, then &quot;argLine&quot; would be used for &quot;jar&quot; packaging and
+	 * &quot;tycho.testArgLine&quot; for &quot;eclipse-test-plugin&quot;.
+	 * 
+	 * @parameter property=&quot;jacoco.propertyName&quot;
+	 */
+	String propertyName;
+	/**
+	 * If set to true and the execution data file already exists, coverage data
+	 * is appended to the existing file. If set to false, an existing execution
+	 * data file will be replaced.
+	 * 
+	 * @parameter property=&quot;jacoco.append&quot;
+	 */
+	Boolean append;
+	/**
+	 * A list of class loader names, that should be excluded from execution
+	 * analysis. The list entries are separated by a colon (:) and may use
+	 * wildcard characters (* and ?). This option might be required in case of
+	 * special frameworks that conflict with JaCoCo code instrumentation, in
+	 * particular class loaders that do not have access to the Java runtime
+	 * classes.
+	 * 
+	 * @parameter property=&quot;jacoco.exclClassLoaders&quot;
+	 */
+	String exclClassLoaders;
+	/**
+	 * Specifies whether also classes from the bootstrap classloader should be
+	 * instrumented. Use this feature with caution, it needs heavy
+	 * includes/excludes tuning.
+	 * 
+	 * @parameter property=&quot;jacoco.inclBootstrapClasses&quot;
+	 */
+	Boolean inclBootstrapClasses;
+	/**
+	 * Specifies whether classes without source location should be instrumented.
+	 * 
+	 * @parameter property=&quot;jacoco.inclNoLocationClasses&quot;
+	 */
+	Boolean inclNoLocationClasses;
+	/**
+	 * A session identifier that is written with the execution data. Without
+	 * this parameter a random identifier is created by the agent.
+	 * 
+	 * @parameter property=&quot;jacoco.sessionId&quot;
+	 */
+	String sessionId;
+	/**
+	 * If set to true coverage data will be written on VM shutdown.
+	 * 
+	 * @parameter property=&quot;jacoco.dumpOnExit&quot;
+	 */
+	Boolean dumpOnExit;
+	/**
+	 * Output method to use for writing coverage data. Valid options are:
+	 * &lt;ul&gt;
+	 * &lt;li&gt;file: At VM termination execution data is written to a file.&lt;/li&gt;
+	 * &lt;li&gt;tcpserver: The agent listens for incoming connections on the TCP port
+	 * specified by the {@link #address} and {@link #port}. Execution data is
+	 * written to this TCP connection.&lt;/li&gt;
+	 * &lt;li&gt;tcpclient: At startup the agent connects to the TCP port specified by
+	 * the {@link #address} and {@link #port}. Execution data is written to this
+	 * TCP connection.&lt;/li&gt;
+	 * &lt;li&gt;none: Do not produce any output.&lt;/li&gt;
+	 * &lt;/ul&gt;
+	 * 
+	 * @parameter property=&quot;jacoco.output&quot;
+	 */
+	String output;
+	/**
+	 * IP address or hostname to bind to when the output method is tcpserver or
+	 * connect to when the output method is tcpclient. In tcpserver mode the
+	 * value &quot;*&quot; causes the agent to accept connections on any local address.
+	 * 
+	 * @parameter property=&quot;jacoco.address&quot;
+	 */
+	String address;
+	/**
+	 * Port to bind to when the output method is tcpserver or connect to when
+	 * the output method is tcpclient. In tcpserver mode the port must be
+	 * available, which means that if multiple JaCoCo agents should run on the
+	 * same machine, different ports have to be specified.
+	 * 
+	 * @parameter property=&quot;jacoco.port&quot;
+	 */
+	Integer port;
+	/**
+	 * If a directory is specified for this parameter the JaCoCo agent dumps all
+	 * class files it processes to the given location. This can be useful for
+	 * debugging purposes or in case of dynamically created classes for example
+	 * when scripting engines are used.
+	 * 
+	 * @parameter property=&quot;jacoco.classDumpDir&quot;
+	 */
+	File classDumpDir;
+	/**
+	 * If set to true the agent exposes functionality via JMX.
+	 * 
+	 * @parameter property=&quot;jacoco.jmx&quot;
+	 */
+	Boolean jmx;
+
+	@Override
+	public void executeMojo() {
+<span class="nc" id="L153">		final String name = getEffectivePropertyName();</span>
+<span class="nc" id="L154">		final Properties projectProperties = getProject().getProperties();</span>
+<span class="nc" id="L155">		final String oldValue = projectProperties.getProperty(name);</span>
+<span class="nc" id="L156">		final String newValue = createAgentOptions().prependVMArguments(</span>
+				oldValue, getAgentJarFile());
+<span class="nc" id="L158">		getLog().info(name + &quot; set to &quot; + newValue);</span>
+<span class="nc" id="L159">		projectProperties.setProperty(name, newValue);</span>
+<span class="nc" id="L160">	}</span>
+
+	@Override
+	protected void skipMojo() {
+<span class="nc" id="L164">		final String name = getEffectivePropertyName();</span>
+<span class="nc" id="L165">		final Properties projectProperties = getProject().getProperties();</span>
+<span class="nc" id="L166">		getLog().info(name + &quot; set to empty&quot;);</span>
+<span class="nc" id="L167">		projectProperties.setProperty(name, &quot;&quot;);</span>
+<span class="nc" id="L168">	}</span>
+
+	File getAgentJarFile() {
+<span class="nc" id="L171">		final Artifact jacocoAgentArtifact = pluginArtifactMap</span>
+				.get(AGENT_ARTIFACT_NAME);
+<span class="nc" id="L173">		return jacocoAgentArtifact.getFile();</span>
+	}
+
+	AgentOptions createAgentOptions() {
+<span class="nc" id="L177">		final AgentOptions agentOptions = new AgentOptions();</span>
+<span class="nc" id="L178">		agentOptions.setDestfile(getDestFile().getAbsolutePath());</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">		if (append != null) {</span>
+<span class="nc" id="L180">			agentOptions.setAppend(append.booleanValue());</span>
+		}
+<span class="nc bnc" id="L182" title="All 4 branches missed.">		if (getIncludes() != null &amp;&amp; !getIncludes().isEmpty()) {</span>
+<span class="nc" id="L183">			final String agentIncludes = StringUtils.join(getIncludes()</span>
+					.iterator(), &quot;:&quot;);
+<span class="nc" id="L185">			agentOptions.setIncludes(agentIncludes);</span>
+		}
+<span class="nc bnc" id="L187" title="All 4 branches missed.">		if (getExcludes() != null &amp;&amp; !getExcludes().isEmpty()) {</span>
+<span class="nc" id="L188">			final String agentExcludes = StringUtils.join(getExcludes()</span>
+					.iterator(), &quot;:&quot;);
+<span class="nc" id="L190">			agentOptions.setExcludes(agentExcludes);</span>
+		}
+<span class="nc bnc" id="L192" title="All 2 branches missed.">		if (exclClassLoaders != null) {</span>
+<span class="nc" id="L193">			agentOptions.setExclClassloader(exclClassLoaders);</span>
+		}
+<span class="nc bnc" id="L195" title="All 2 branches missed.">		if (inclBootstrapClasses != null) {</span>
+<span class="nc" id="L196">			agentOptions.setInclBootstrapClasses(inclBootstrapClasses</span>
+					.booleanValue());
+		}
+<span class="nc bnc" id="L199" title="All 2 branches missed.">		if (inclNoLocationClasses != null) {</span>
+<span class="nc" id="L200">			agentOptions.setInclNoLocationClasses(inclNoLocationClasses</span>
+					.booleanValue());
+		}
+<span class="nc bnc" id="L203" title="All 2 branches missed.">		if (sessionId != null) {</span>
+<span class="nc" id="L204">			agentOptions.setSessionId(sessionId);</span>
+		}
+<span class="nc bnc" id="L206" title="All 2 branches missed.">		if (dumpOnExit != null) {</span>
+<span class="nc" id="L207">			agentOptions.setDumpOnExit(dumpOnExit.booleanValue());</span>
+		}
+<span class="nc bnc" id="L209" title="All 2 branches missed.">		if (output != null) {</span>
+<span class="nc" id="L210">			agentOptions.setOutput(output);</span>
+		}
+<span class="nc bnc" id="L212" title="All 2 branches missed.">		if (address != null) {</span>
+<span class="nc" id="L213">			agentOptions.setAddress(address);</span>
+		}
+<span class="nc bnc" id="L215" title="All 2 branches missed.">		if (port != null) {</span>
+<span class="nc" id="L216">			agentOptions.setPort(port.intValue());</span>
+		}
+<span class="nc bnc" id="L218" title="All 2 branches missed.">		if (classDumpDir != null) {</span>
+<span class="nc" id="L219">			agentOptions.setClassDumpDir(classDumpDir.getAbsolutePath());</span>
+		}
+<span class="nc bnc" id="L221" title="All 2 branches missed.">		if (jmx != null) {</span>
+<span class="nc" id="L222">			agentOptions.setJmx(jmx.booleanValue());</span>
+		}
+<span class="nc" id="L224">		return agentOptions;</span>
+	}
+
+	String getEffectivePropertyName() {
+<span class="nc bnc" id="L228" title="All 2 branches missed.">		if (isPropertyNameSpecified()) {</span>
+<span class="nc" id="L229">			return propertyName;</span>
+		}
+<span class="nc bnc" id="L231" title="All 2 branches missed.">		if (isEclipseTestPluginPackaging()) {</span>
+<span class="nc" id="L232">			return TYCHO_ARG_LINE;</span>
+		}
+<span class="nc" id="L234">		return SUREFIRE_ARG_LINE;</span>
+	}
+
+	boolean isPropertyNameSpecified() {
+<span class="nc bnc" id="L238" title="All 4 branches missed.">		return propertyName != null &amp;&amp; !&quot;&quot;.equals(propertyName);</span>
+	}
+
+	boolean isEclipseTestPluginPackaging() {
+<span class="nc" id="L242">		return &quot;eclipse-test-plugin&quot;.equals(getProject().getPackaging());</span>
+	}
+
+	/**
+	 * @return the destFile
+	 */
+	abstract File getDestFile();
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

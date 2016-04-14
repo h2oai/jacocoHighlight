@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FileMultiReportOutputTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report</a> &gt; <span class="el_source">FileMultiReportOutputTest.java</span></div><h1>FileMultiReportOutputTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report;
+
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+/**
+ * Unit tests for {@link FileMultiReportOutput}.
+ */
+<span class="fc" id="L29">public class FileMultiReportOutputTest {</span>
+
+<span class="fc" id="L31">	@Rule</span>
+	public TemporaryFolder folder = new TemporaryFolder();
+
+	@Test
+	public void testCreateFileWithDirectories() throws IOException {
+<span class="fc" id="L36">		final IMultiReportOutput output = new FileMultiReportOutput(</span>
+				folder.getRoot());
+<span class="fc" id="L38">		final OutputStream stream = output.createFile(&quot;a/b/c/test&quot;);</span>
+<span class="fc" id="L39">		stream.write(1);</span>
+<span class="fc" id="L40">		stream.write(2);</span>
+<span class="fc" id="L41">		stream.write(3);</span>
+<span class="fc" id="L42">		stream.close();</span>
+<span class="fc" id="L43">		output.close();</span>
+
+<span class="fc" id="L45">		final InputStream actual = new FileInputStream(new File(</span>
+				folder.getRoot(), &quot;a/b/c/test&quot;));
+<span class="fc" id="L47">		assertEquals(1, actual.read());</span>
+<span class="fc" id="L48">		assertEquals(2, actual.read());</span>
+<span class="fc" id="L49">		assertEquals(3, actual.read());</span>
+<span class="fc" id="L50">		assertEquals(-1, actual.read());</span>
+<span class="fc" id="L51">		actual.close();</span>
+<span class="fc" id="L52">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testCreateFileNegative() throws IOException {
+<span class="fc" id="L56">		folder.newFile(&quot;a&quot;);</span>
+<span class="fc" id="L57">		final IMultiReportOutput output = new FileMultiReportOutput(</span>
+				folder.getRoot());
+<span class="nc" id="L59">		output.createFile(&quot;a/b/c/test&quot;);</span>
+<span class="nc" id="L60">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

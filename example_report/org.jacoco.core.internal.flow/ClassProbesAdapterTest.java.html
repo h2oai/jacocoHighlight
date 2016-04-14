@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ClassProbesAdapterTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.flow</a> &gt; <span class="el_source">ClassProbesAdapterTest.java</span></div><h1>ClassProbesAdapterTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.flow;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
+/**
+ * Unit tests for {@link ClassProbesAdapter}.
+ */
+<span class="fc" id="L27">public class ClassProbesAdapterTest {</span>
+
+<span class="fc" id="L29">	private static class MockMethodVisitor extends MethodProbesVisitor {</span>
+
+<span class="fc" id="L31">		boolean frame = false;</span>
+
+		@Override
+		public void visitJumpInsnWithProbe(int opcode, Label label,
+				int probeId, IFrame frame) {
+<span class="fc" id="L36">			frame.accept(this);</span>
+<span class="fc" id="L37">		}</span>
+
+		@Override
+		public void visitTableSwitchInsnWithProbes(int min, int max,
+				Label dflt, Label[] labels, IFrame frame) {
+<span class="nc" id="L42">			frame.accept(this);</span>
+<span class="nc" id="L43">		}</span>
+
+		@Override
+		public void visitLookupSwitchInsnWithProbes(Label dflt, int[] keys,
+				Label[] labels, IFrame frame) {
+<span class="nc" id="L48">			frame.accept(this);</span>
+<span class="nc" id="L49">		}</span>
+
+		@Override
+		public void visitFrame(int type, int nLocal, Object[] local,
+				int nStack, Object[] stack) {
+<span class="fc" id="L54">			frame = true;</span>
+<span class="fc" id="L55">		}</span>
+	}
+
+<span class="fc" id="L58">	private static class MockClassVisitor extends ClassProbesVisitor {</span>
+
+		int count;
+
+		@Override
+		public MethodProbesVisitor visitMethod(int access, String name,
+				String desc, String signature, String[] exceptions) {
+<span class="fc" id="L65">			return null;</span>
+		}
+
+		@Override
+		public void visitTotalProbeCount(int count) {
+<span class="fc" id="L70">			this.count = count;</span>
+<span class="fc" id="L71">		}</span>
+	}
+
+	@Test
+	public void testProbeCounter() {
+<span class="fc" id="L76">		final MockClassVisitor cv = new MockClassVisitor();</span>
+<span class="fc" id="L77">		final ClassProbesAdapter adapter = new ClassProbesAdapter(cv, false);</span>
+<span class="fc" id="L78">		assertEquals(0, adapter.nextId());</span>
+<span class="fc" id="L79">		assertEquals(1, adapter.nextId());</span>
+<span class="fc" id="L80">		assertEquals(2, adapter.nextId());</span>
+<span class="fc" id="L81">		adapter.visitEnd();</span>
+<span class="fc" id="L82">		assertEquals(3, cv.count);</span>
+<span class="fc" id="L83">	}</span>
+
+	@Test
+	public void testVisitClassMethods() {
+<span class="fc" id="L87">		final MockClassVisitor cv = new MockClassVisitor() {</span>
+			@Override
+			public MethodProbesVisitor visitMethod(int access, String name,
+					String desc, String signature, String[] exceptions) {
+<span class="fc" id="L91">				return new MockMethodVisitor();</span>
+			}
+		};
+<span class="fc" id="L94">		final ClassProbesAdapter adapter = new ClassProbesAdapter(cv, false);</span>
+<span class="fc" id="L95">		adapter.visit(Opcodes.V1_5, 0, &quot;Foo&quot;, null, &quot;java/lang/Object&quot;, null);</span>
+<span class="fc" id="L96">		writeMethod(adapter);</span>
+<span class="fc" id="L97">		writeMethod(adapter);</span>
+<span class="fc" id="L98">		writeMethod(adapter);</span>
+
+<span class="fc" id="L100">		assertEquals(0, cv.count);</span>
+<span class="fc" id="L101">		adapter.visitEnd();</span>
+<span class="fc" id="L102">		assertEquals(3, cv.count);</span>
+<span class="fc" id="L103">	}</span>
+
+	@Test
+	public void testVisitMethodNullMethodVisitor() {
+<span class="fc" id="L107">		final MockClassVisitor cv = new MockClassVisitor();</span>
+<span class="fc" id="L108">		final ClassProbesAdapter adapter = new ClassProbesAdapter(cv, false);</span>
+<span class="fc" id="L109">		writeMethod(adapter); // 1 probe</span>
+<span class="fc" id="L110">		writeMethodWithBranch(adapter); // 3 probes</span>
+<span class="fc" id="L111">		writeMethodWithTableSwitch(adapter); // 3 probes</span>
+<span class="fc" id="L112">		writeMethodWithLookupSwitch(adapter); // 3 probes</span>
+<span class="fc" id="L113">		adapter.visitEnd();</span>
+<span class="fc" id="L114">		assertEquals(10, cv.count);</span>
+<span class="fc" id="L115">	}</span>
+
+	@Test
+	public void testVisitWithFrames() {
+<span class="fc" id="L119">		final MockMethodVisitor mv = new MockMethodVisitor();</span>
+<span class="fc" id="L120">		final MockClassVisitor cv = new MockClassVisitor() {</span>
+			@Override
+			public MethodProbesVisitor visitMethod(int access, String name,
+					String desc, String signature, String[] exceptions) {
+<span class="fc" id="L124">				return mv;</span>
+			}
+		};
+<span class="fc" id="L127">		final ClassProbesAdapter adapter = new ClassProbesAdapter(cv, true);</span>
+<span class="fc" id="L128">		writeMethodWithBranch(adapter);</span>
+<span class="fc" id="L129">		adapter.visitEnd();</span>
+<span class="fc" id="L130">		assertTrue(mv.frame);</span>
+<span class="fc" id="L131">	}</span>
+
+	@Test
+	public void testVisitWithoutFrames() {
+<span class="fc" id="L135">		final MockMethodVisitor mv = new MockMethodVisitor();</span>
+<span class="fc" id="L136">		final MockClassVisitor cv = new MockClassVisitor() {</span>
+			@Override
+			public MethodProbesVisitor visitMethod(int access, String name,
+					String desc, String signature, String[] exceptions) {
+<span class="fc" id="L140">				return mv;</span>
+			}
+		};
+<span class="fc" id="L143">		final ClassProbesAdapter adapter = new ClassProbesAdapter(cv, false);</span>
+<span class="fc" id="L144">		writeMethodWithBranch(adapter);</span>
+<span class="fc" id="L145">		adapter.visitEnd();</span>
+<span class="fc" id="L146">		assertFalse(mv.frame);</span>
+<span class="fc" id="L147">	}</span>
+
+	private void writeMethod(final ClassVisitor cv) {
+<span class="fc" id="L150">		MethodVisitor mv = cv.visitMethod(0, &quot;foo&quot;, &quot;()V&quot;, null, null);</span>
+<span class="fc" id="L151">		mv.visitCode();</span>
+<span class="fc" id="L152">		mv.visitInsn(Opcodes.RETURN);</span>
+<span class="fc" id="L153">		mv.visitMaxs(0, 1);</span>
+<span class="fc" id="L154">		mv.visitEnd();</span>
+<span class="fc" id="L155">	}</span>
+
+	private void writeMethodWithBranch(final ClassVisitor cv) {
+<span class="fc" id="L158">		MethodVisitor mv = cv.visitMethod(0, &quot;foo&quot;, &quot;()V&quot;, null, null);</span>
+<span class="fc" id="L159">		mv.visitCode();</span>
+<span class="fc" id="L160">		mv.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L161">		Label l = new Label();</span>
+<span class="fc" id="L162">		mv.visitJumpInsn(Opcodes.IFEQ, l);</span>
+<span class="fc" id="L163">		mv.visitInsn(Opcodes.NOP);</span>
+<span class="fc" id="L164">		mv.visitLabel(l);</span>
+<span class="fc" id="L165">		mv.visitInsn(Opcodes.RETURN);</span>
+<span class="fc" id="L166">		mv.visitMaxs(1, 1);</span>
+<span class="fc" id="L167">		mv.visitEnd();</span>
+<span class="fc" id="L168">	}</span>
+
+	private void writeMethodWithTableSwitch(final ClassVisitor cv) {
+<span class="fc" id="L171">		MethodVisitor mv = cv.visitMethod(0, &quot;foo&quot;, &quot;()V&quot;, null, null);</span>
+<span class="fc" id="L172">		mv.visitCode();</span>
+<span class="fc" id="L173">		mv.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L174">		Label l1 = new Label();</span>
+<span class="fc" id="L175">		Label l2 = new Label();</span>
+<span class="fc" id="L176">		mv.visitTableSwitchInsn(0, 0, l1, new Label[] { l2 });</span>
+<span class="fc" id="L177">		mv.visitLabel(l1);</span>
+<span class="fc" id="L178">		mv.visitInsn(Opcodes.NOP);</span>
+<span class="fc" id="L179">		mv.visitLabel(l2);</span>
+<span class="fc" id="L180">		mv.visitInsn(Opcodes.RETURN);</span>
+<span class="fc" id="L181">		mv.visitMaxs(1, 1);</span>
+<span class="fc" id="L182">		mv.visitEnd();</span>
+<span class="fc" id="L183">	}</span>
+
+	private void writeMethodWithLookupSwitch(final ClassVisitor cv) {
+<span class="fc" id="L186">		MethodVisitor mv = cv.visitMethod(0, &quot;foo&quot;, &quot;()V&quot;, null, null);</span>
+<span class="fc" id="L187">		mv.visitCode();</span>
+<span class="fc" id="L188">		mv.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L189">		Label l1 = new Label();</span>
+<span class="fc" id="L190">		Label l2 = new Label();</span>
+<span class="fc" id="L191">		mv.visitLookupSwitchInsn(l1, new int[] { 0 }, new Label[] { l2 });</span>
+<span class="fc" id="L192">		mv.visitLabel(l1);</span>
+<span class="fc" id="L193">		mv.visitInsn(Opcodes.NOP);</span>
+<span class="fc" id="L194">		mv.visitLabel(l2);</span>
+<span class="fc" id="L195">		mv.visitInsn(Opcodes.RETURN);</span>
+<span class="fc" id="L196">		mv.visitMaxs(1, 1);</span>
+<span class="fc" id="L197">		mv.visitEnd();</span>
+<span class="fc" id="L198">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

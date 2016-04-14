@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ZipMultiReportOutputTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report</a> &gt; <span class="el_source">ZipMultiReportOutputTest.java</span></div><h1>ZipMultiReportOutputTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link ZipMultiReportOutput}.
+ */
+<span class="fc" id="L36">public class ZipMultiReportOutputTest {</span>
+
+	private ByteArrayOutputStream buffer;
+
+	private ZipMultiReportOutput zipOutput;
+
+	@Before
+	public void setup() throws Exception {
+<span class="fc" id="L44">		buffer = new ByteArrayOutputStream();</span>
+<span class="fc" id="L45">		zipOutput = new ZipMultiReportOutput(buffer);</span>
+<span class="fc" id="L46">	}</span>
+
+	@Test
+	public void testWrite1() throws IOException {
+<span class="fc" id="L50">		final byte[] content1 = &quot;HelloZip&quot;.getBytes();</span>
+
+<span class="fc" id="L52">		OutputStream out = zipOutput.createFile(&quot;a.txt&quot;);</span>
+<span class="fc" id="L53">		out.write(content1);</span>
+<span class="fc" id="L54">		out.close();</span>
+
+<span class="fc" id="L56">		zipOutput.close();</span>
+
+<span class="fc" id="L58">		final Map&lt;String, byte[]&gt; entries = readEntries();</span>
+<span class="fc" id="L59">		assertEquals(Collections.singleton(&quot;a.txt&quot;), entries.keySet());</span>
+<span class="fc" id="L60">		assertArrayEquals(content1, entries.get(&quot;a.txt&quot;));</span>
+<span class="fc" id="L61">	}</span>
+
+	@Test
+	public void testWrite2() throws IOException {
+<span class="fc" id="L65">		final byte[] content1 = &quot;HelloZip&quot;.getBytes(&quot;ISO-8859-1&quot;);</span>
+
+<span class="fc" id="L67">		OutputStream out = zipOutput.createFile(&quot;b.txt&quot;);</span>
+<span class="fc" id="L68">		out.write(content1, 5, 3);</span>
+<span class="fc" id="L69">		out.close();</span>
+
+<span class="fc" id="L71">		zipOutput.close();</span>
+
+<span class="fc" id="L73">		final Map&lt;String, byte[]&gt; entries = readEntries();</span>
+<span class="fc" id="L74">		assertEquals(Collections.singleton(&quot;b.txt&quot;), entries.keySet());</span>
+<span class="fc" id="L75">		assertArrayEquals(&quot;Zip&quot;.getBytes(&quot;ISO-8859-1&quot;), entries.get(&quot;b.txt&quot;));</span>
+<span class="fc" id="L76">	}</span>
+
+	@Test
+	public void testWrite3() throws IOException {
+
+<span class="fc" id="L81">		OutputStream out = zipOutput.createFile(&quot;b.txt&quot;);</span>
+<span class="fc" id="L82">		out.write(40);</span>
+<span class="fc" id="L83">		out.flush();</span>
+<span class="fc" id="L84">		out.close();</span>
+
+<span class="fc" id="L86">		zipOutput.close();</span>
+
+<span class="fc" id="L88">		final Map&lt;String, byte[]&gt; entries = readEntries();</span>
+<span class="fc" id="L89">		assertEquals(Collections.singleton(&quot;b.txt&quot;), entries.keySet());</span>
+<span class="fc" id="L90">		assertArrayEquals(new byte[] { 40 }, entries.get(&quot;b.txt&quot;));</span>
+<span class="fc" id="L91">	}</span>
+
+	@Test
+	public void testCreateFiles() throws IOException {
+<span class="fc" id="L95">		final byte[] content1 = &quot;HelloZip&quot;.getBytes();</span>
+
+<span class="fc" id="L97">		OutputStream out = zipOutput.createFile(&quot;dir/index.html&quot;);</span>
+<span class="fc" id="L98">		out.write(content1);</span>
+<span class="fc" id="L99">		out.close();</span>
+
+<span class="fc" id="L101">		final byte[] content2 = &quot;HelloWorld&quot;.getBytes();</span>
+
+<span class="fc" id="L103">		out = zipOutput.createFile(&quot;readme.txt&quot;);</span>
+<span class="fc" id="L104">		out.write(content2);</span>
+<span class="fc" id="L105">		out.close();</span>
+
+<span class="fc" id="L107">		zipOutput.close();</span>
+
+<span class="fc" id="L109">		final Map&lt;String, byte[]&gt; entries = readEntries();</span>
+<span class="fc" id="L110">		assertEquals(</span>
+				new HashSet&lt;String&gt;(Arrays.asList(&quot;dir/index.html&quot;,
+						&quot;readme.txt&quot;)), entries.keySet());
+<span class="fc" id="L113">		assertArrayEquals(content1, entries.get(&quot;dir/index.html&quot;));</span>
+<span class="fc" id="L114">		assertArrayEquals(content2, entries.get(&quot;readme.txt&quot;));</span>
+<span class="fc" id="L115">	}</span>
+
+	@Test
+	public void testCreateFilesWithoutClose() throws IOException {
+<span class="fc" id="L119">		final byte[] content1 = &quot;HelloZip&quot;.getBytes();</span>
+
+<span class="fc" id="L121">		OutputStream out = zipOutput.createFile(&quot;dir/index.html&quot;);</span>
+<span class="fc" id="L122">		out.write(content1);</span>
+
+<span class="fc" id="L124">		final byte[] content2 = &quot;HelloWorld&quot;.getBytes();</span>
+
+<span class="fc" id="L126">		out = zipOutput.createFile(&quot;readme.txt&quot;);</span>
+<span class="fc" id="L127">		out.write(content2);</span>
+
+<span class="fc" id="L129">		zipOutput.close();</span>
+
+<span class="fc" id="L131">		final Map&lt;String, byte[]&gt; entries = readEntries();</span>
+<span class="fc" id="L132">		assertEquals(</span>
+				new HashSet&lt;String&gt;(Arrays.asList(&quot;dir/index.html&quot;,
+						&quot;readme.txt&quot;)), entries.keySet());
+<span class="fc" id="L135">		assertArrayEquals(content1, entries.get(&quot;dir/index.html&quot;));</span>
+<span class="fc" id="L136">		assertArrayEquals(content2, entries.get(&quot;readme.txt&quot;));</span>
+<span class="fc" id="L137">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testWriteToClosedStream1() throws IOException {
+<span class="fc" id="L141">		OutputStream out = zipOutput.createFile(&quot;index.html&quot;);</span>
+<span class="fc" id="L142">		out.close();</span>
+<span class="nc" id="L143">		out.write(&quot;HelloZip&quot;.getBytes());</span>
+<span class="nc" id="L144">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testWriteToClosedStream2() throws IOException {
+<span class="fc" id="L148">		OutputStream out = zipOutput.createFile(&quot;index.html&quot;);</span>
+<span class="fc" id="L149">		out.close();</span>
+<span class="nc" id="L150">		out.write(&quot;HelloZip&quot;.getBytes(), 2, 3);</span>
+<span class="nc" id="L151">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testWriteToClosedStream3() throws IOException {
+<span class="fc" id="L155">		OutputStream out = zipOutput.createFile(&quot;index.html&quot;);</span>
+<span class="fc" id="L156">		out.close();</span>
+<span class="nc" id="L157">		out.write(32);</span>
+<span class="nc" id="L158">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testFlushToClosedStream3() throws IOException {
+<span class="fc" id="L162">		OutputStream out = zipOutput.createFile(&quot;index.html&quot;);</span>
+<span class="fc" id="L163">		out.close();</span>
+<span class="nc" id="L164">		out.flush();</span>
+<span class="nc" id="L165">	}</span>
+
+	@Test(expected = IOException.class)
+	public void testWriteToObsoleteStream() throws IOException {
+<span class="fc" id="L169">		final OutputStream out1 = zipOutput.createFile(&quot;a.txt&quot;);</span>
+<span class="fc" id="L170">		zipOutput.createFile(&quot;b.txt&quot;);</span>
+<span class="nc" id="L171">		out1.write(32);</span>
+<span class="nc" id="L172">	}</span>
+
+	private Map&lt;String, byte[]&gt; readEntries() throws IOException {
+<span class="fc" id="L175">		final Map&lt;String, byte[]&gt; entries = new HashMap&lt;String, byte[]&gt;();</span>
+<span class="fc" id="L176">		final byte[] bytes = buffer.toByteArray();</span>
+<span class="fc" id="L177">		final ZipInputStream input = new ZipInputStream(</span>
+				new ByteArrayInputStream(bytes));
+		ZipEntry entry;
+<span class="fc bfc" id="L180" title="All 2 branches covered.">		while ((entry = input.getNextEntry()) != null) {</span>
+<span class="fc" id="L181">			final ByteArrayOutputStream entryBuffer = new ByteArrayOutputStream();</span>
+			int b;
+<span class="fc bfc" id="L183" title="All 2 branches covered.">			while ((b = input.read()) != -1) {</span>
+<span class="fc" id="L184">				entryBuffer.write(b);</span>
+			}
+<span class="fc" id="L186">			byte[] old = entries</span>
+					.put(entry.getName(), entryBuffer.toByteArray());
+<span class="fc" id="L188">			assertNull(&quot;Duplicate entry &quot; + entry.getName(), old);</span>
+<span class="fc" id="L189">		}</span>
+<span class="fc" id="L190">		return entries;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

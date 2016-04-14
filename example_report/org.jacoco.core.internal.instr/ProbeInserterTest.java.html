@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ProbeInserterTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.internal.instr</a> &gt; <span class="el_source">ProbeInserterTest.java</span></div><h1>ProbeInserterTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.internal.instr;
+
+import static org.junit.Assert.assertEquals;
+
+import org.jacoco.core.instr.MethodRecorder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
+/**
+ * Unit tests for {@link ProbeInserter}.
+ */
+<span class="fc" id="L27">public class ProbeInserterTest {</span>
+
+	private MethodRecorder actual, expected;
+
+	private MethodVisitor actualVisitor, expectedVisitor;
+
+	private IProbeArrayStrategy arrayStrategy;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L37">		actual = new MethodRecorder();</span>
+<span class="fc" id="L38">		actualVisitor = actual.getVisitor();</span>
+<span class="fc" id="L39">		expected = new MethodRecorder();</span>
+<span class="fc" id="L40">		expectedVisitor = expected.getVisitor();</span>
+<span class="fc" id="L41">		arrayStrategy = new IProbeArrayStrategy() {</span>
+
+			public int storeInstance(MethodVisitor mv, int variable) {
+<span class="fc" id="L44">				mv.visitLdcInsn(&quot;init&quot;);</span>
+<span class="fc" id="L45">				return 5;</span>
+			}
+
+			public void addMembers(ClassVisitor delegate, int probeCount) {
+<span class="nc" id="L49">			}</span>
+		};
+<span class="fc" id="L51">	}</span>
+
+	@After
+	public void verify() {
+<span class="fc" id="L55">		assertEquals(expected, actual);</span>
+<span class="fc" id="L56">	}</span>
+
+	@Test
+	public void testVariableStatic() {
+<span class="fc" id="L60">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;()V&quot;,</span>
+				actualVisitor, arrayStrategy);
+<span class="fc" id="L62">		pi.insertProbe(0);</span>
+
+<span class="fc" id="L64">		expectedVisitor.visitVarInsn(Opcodes.ALOAD, 0);</span>
+<span class="fc" id="L65">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L66">		expectedVisitor.visitInsn(Opcodes.ICONST_1);</span>
+<span class="fc" id="L67">		expectedVisitor.visitInsn(Opcodes.BASTORE);</span>
+<span class="fc" id="L68">	}</span>
+
+	@Test
+	public void testVariableNonStatic() {
+<span class="fc" id="L72">		ProbeInserter pi = new ProbeInserter(0, &quot;()V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L74">		pi.insertProbe(0);</span>
+
+<span class="fc" id="L76">		expectedVisitor.visitVarInsn(Opcodes.ALOAD, 1);</span>
+<span class="fc" id="L77">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L78">		expectedVisitor.visitInsn(Opcodes.ICONST_1);</span>
+<span class="fc" id="L79">		expectedVisitor.visitInsn(Opcodes.BASTORE);</span>
+<span class="fc" id="L80">	}</span>
+
+	@Test
+	public void testVariableNonStatic_IZObject() {
+<span class="fc" id="L84">		ProbeInserter pi = new ProbeInserter(0, &quot;(IZLjava/lang/Object;)V&quot;,</span>
+				actualVisitor, arrayStrategy);
+<span class="fc" id="L86">		pi.insertProbe(0);</span>
+
+<span class="fc" id="L88">		expectedVisitor.visitVarInsn(Opcodes.ALOAD, 4);</span>
+<span class="fc" id="L89">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L90">		expectedVisitor.visitInsn(Opcodes.ICONST_1);</span>
+<span class="fc" id="L91">		expectedVisitor.visitInsn(Opcodes.BASTORE);</span>
+<span class="fc" id="L92">	}</span>
+
+	@Test
+	public void testVariableNonStatic_JD() {
+<span class="fc" id="L96">		ProbeInserter pi = new ProbeInserter(0, &quot;(JD)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L98">		pi.insertProbe(0);</span>
+
+<span class="fc" id="L100">		expectedVisitor.visitVarInsn(Opcodes.ALOAD, 5);</span>
+<span class="fc" id="L101">		expectedVisitor.visitInsn(Opcodes.ICONST_0);</span>
+<span class="fc" id="L102">		expectedVisitor.visitInsn(Opcodes.ICONST_1);</span>
+<span class="fc" id="L103">		expectedVisitor.visitInsn(Opcodes.BASTORE);</span>
+<span class="fc" id="L104">	}</span>
+
+	@Test
+	public void testVisitCode() {
+<span class="fc" id="L108">		ProbeInserter pi = new ProbeInserter(0, &quot;()V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L110">		pi.visitCode();</span>
+
+<span class="fc" id="L112">		expectedVisitor.visitLdcInsn(&quot;init&quot;);</span>
+<span class="fc" id="L113">	}</span>
+
+	@Test
+	public void testVisitVarIns() {
+<span class="fc" id="L117">		ProbeInserter pi = new ProbeInserter(0, &quot;(II)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+
+<span class="fc" id="L120">		pi.visitVarInsn(Opcodes.ALOAD, 0);</span>
+<span class="fc" id="L121">		pi.visitVarInsn(Opcodes.ILOAD, 1);</span>
+<span class="fc" id="L122">		pi.visitVarInsn(Opcodes.ILOAD, 2);</span>
+<span class="fc" id="L123">		pi.visitVarInsn(Opcodes.ISTORE, 3);</span>
+<span class="fc" id="L124">		pi.visitVarInsn(Opcodes.FSTORE, 4);</span>
+
+		// Argument variables stay at the same position:
+<span class="fc" id="L127">		expectedVisitor.visitVarInsn(Opcodes.ALOAD, 0);</span>
+<span class="fc" id="L128">		expectedVisitor.visitVarInsn(Opcodes.ILOAD, 1);</span>
+<span class="fc" id="L129">		expectedVisitor.visitVarInsn(Opcodes.ILOAD, 2);</span>
+
+		// Local variables are shifted by one:
+<span class="fc" id="L132">		expectedVisitor.visitVarInsn(Opcodes.ISTORE, 4);</span>
+<span class="fc" id="L133">		expectedVisitor.visitVarInsn(Opcodes.FSTORE, 5);</span>
+<span class="fc" id="L134">	}</span>
+
+	@Test
+	public void testVisitIincInsn() {
+<span class="fc" id="L138">		ProbeInserter pi = new ProbeInserter(0, &quot;(II)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L140">		pi.visitIincInsn(0, 100);</span>
+<span class="fc" id="L141">		pi.visitIincInsn(1, 101);</span>
+<span class="fc" id="L142">		pi.visitIincInsn(2, 102);</span>
+<span class="fc" id="L143">		pi.visitIincInsn(3, 103);</span>
+<span class="fc" id="L144">		pi.visitIincInsn(4, 104);</span>
+
+		// Argument variables stay at the same position:
+<span class="fc" id="L147">		expectedVisitor.visitIincInsn(0, 100);</span>
+<span class="fc" id="L148">		expectedVisitor.visitIincInsn(1, 101);</span>
+<span class="fc" id="L149">		expectedVisitor.visitIincInsn(2, 102);</span>
+
+		// Local variables are shifted by one:
+<span class="fc" id="L152">		expectedVisitor.visitIincInsn(4, 103);</span>
+<span class="fc" id="L153">		expectedVisitor.visitIincInsn(5, 104);</span>
+<span class="fc" id="L154">	}</span>
+
+	@Test
+	public void testVisitLocalVariable() {
+<span class="fc" id="L158">		ProbeInserter pi = new ProbeInserter(0, &quot;(II)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+
+<span class="fc" id="L161">		pi.visitLocalVariable(null, null, null, null, null, 0);</span>
+<span class="fc" id="L162">		pi.visitLocalVariable(null, null, null, null, null, 1);</span>
+<span class="fc" id="L163">		pi.visitLocalVariable(null, null, null, null, null, 2);</span>
+<span class="fc" id="L164">		pi.visitLocalVariable(null, null, null, null, null, 3);</span>
+<span class="fc" id="L165">		pi.visitLocalVariable(null, null, null, null, null, 4);</span>
+
+		// Argument variables stay at the same position:
+<span class="fc" id="L168">		expectedVisitor.visitLocalVariable(null, null, null, null, null, 0);</span>
+<span class="fc" id="L169">		expectedVisitor.visitLocalVariable(null, null, null, null, null, 1);</span>
+<span class="fc" id="L170">		expectedVisitor.visitLocalVariable(null, null, null, null, null, 2);</span>
+
+		// Local variables are shifted by one:
+<span class="fc" id="L173">		expectedVisitor.visitLocalVariable(null, null, null, null, null, 4);</span>
+<span class="fc" id="L174">		expectedVisitor.visitLocalVariable(null, null, null, null, null, 5);</span>
+<span class="fc" id="L175">	}</span>
+
+	@Test
+	public void testVisitMaxs1() {
+<span class="fc" id="L179">		ProbeInserter pi = new ProbeInserter(0, &quot;(II)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L181">		pi.visitCode();</span>
+<span class="fc" id="L182">		pi.visitMaxs(0, 8);</span>
+
+<span class="fc" id="L184">		expectedVisitor.visitLdcInsn(&quot;init&quot;);</span>
+<span class="fc" id="L185">		expectedVisitor.visitMaxs(5, 9);</span>
+<span class="fc" id="L186">	}</span>
+
+	@Test
+	public void testVisitMaxs2() {
+<span class="fc" id="L190">		ProbeInserter pi = new ProbeInserter(0, &quot;(II)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="fc" id="L192">		pi.visitCode();</span>
+<span class="fc" id="L193">		pi.visitMaxs(10, 8);</span>
+
+<span class="fc" id="L195">		expectedVisitor.visitLdcInsn(&quot;init&quot;);</span>
+<span class="fc" id="L196">		expectedVisitor.visitMaxs(13, 9);</span>
+<span class="fc" id="L197">	}</span>
+
+	@Test
+	public void testVisitFrame() {
+<span class="fc" id="L201">		ProbeInserter pi = new ProbeInserter(0, &quot;(J)V&quot;, actualVisitor,</span>
+				arrayStrategy);
+
+<span class="fc" id="L204">		pi.visitFrame(Opcodes.F_NEW, 3, new Object[] { &quot;Foo&quot;, Opcodes.LONG,</span>
+				&quot;java/lang/String&quot; }, 0, new Object[0]);
+
+<span class="fc" id="L207">		expectedVisitor.visitFrame(Opcodes.F_NEW, 4, new Object[] { &quot;Foo&quot;,</span>
+				Opcodes.LONG, &quot;[Z&quot;, &quot;java/lang/String&quot; }, 0, new Object[0]);
+<span class="fc" id="L209">	}</span>
+
+	@Test
+	public void testVisitFrameNoLocals() {
+<span class="fc" id="L213">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;()V&quot;,</span>
+				actualVisitor, arrayStrategy);
+
+<span class="fc" id="L216">		pi.visitFrame(Opcodes.F_NEW, 0, new Object[] {}, 0, new Object[0]);</span>
+
+<span class="fc" id="L218">		expectedVisitor.visitFrame(Opcodes.F_NEW, 1, new Object[] { &quot;[Z&quot; }, 0,</span>
+				new Object[0]);
+<span class="fc" id="L220">	}</span>
+
+	@Test
+	public void testVisitFrameProbeAt0() {
+<span class="fc" id="L224">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;()V&quot;,</span>
+				actualVisitor, arrayStrategy);
+
+<span class="fc" id="L227">		pi.visitFrame(Opcodes.F_NEW, 2, new Object[] { Opcodes.DOUBLE, &quot;Foo&quot; },</span>
+				0, new Object[0]);
+
+<span class="fc" id="L230">		expectedVisitor.visitFrame(Opcodes.F_NEW, 3, new Object[] { &quot;[Z&quot;,</span>
+				Opcodes.DOUBLE, &quot;Foo&quot; }, 0, new Object[0]);
+<span class="fc" id="L232">	}</span>
+
+	@Test
+	public void testFillOneWord() {
+<span class="fc" id="L236">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;(I)V&quot;,</span>
+				actualVisitor, arrayStrategy);
+
+<span class="fc" id="L239">		pi.visitFrame(Opcodes.F_NEW, 0, new Object[] {}, 0, new Object[] {});</span>
+
+		// The locals in this frame are filled with TOP up to the probe variable
+<span class="fc" id="L242">		expectedVisitor.visitFrame(Opcodes.F_NEW, 2, new Object[] {</span>
+				Opcodes.TOP, &quot;[Z&quot;, }, 0, new Object[] {});
+<span class="fc" id="L244">	}</span>
+
+	@Test
+	public void testFillTwoWord() {
+<span class="fc" id="L248">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;(J)V&quot;,</span>
+				actualVisitor, arrayStrategy);
+
+<span class="fc" id="L251">		pi.visitFrame(Opcodes.F_NEW, 0, new Object[] {}, 0, new Object[] {});</span>
+
+		// The locals in this frame are filled with TOP up to the probe variable
+<span class="fc" id="L254">		expectedVisitor.visitFrame(Opcodes.F_NEW, 3, new Object[] {</span>
+				Opcodes.TOP, Opcodes.TOP, &quot;[Z&quot;, }, 0, new Object[] {});
+<span class="fc" id="L256">	}</span>
+
+	@Test
+	public void testFillPartly() {
+<span class="fc" id="L260">		ProbeInserter pi = new ProbeInserter(Opcodes.ACC_STATIC, &quot;(DIJ)V&quot;,</span>
+				actualVisitor, arrayStrategy);
+
+<span class="fc" id="L263">		pi.visitFrame(Opcodes.F_NEW, 1, new Object[] { Opcodes.DOUBLE }, 0,</span>
+				new Object[] {});
+
+		// The locals in this frame are filled with TOP up to the probe variable
+<span class="fc" id="L267">		expectedVisitor.visitFrame(Opcodes.F_NEW, 5, new Object[] {</span>
+				Opcodes.DOUBLE, Opcodes.TOP, Opcodes.TOP, Opcodes.TOP, &quot;[Z&quot;, },
+				0, new Object[] {});
+<span class="fc" id="L270">	}</span>
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testVisitFrame_invalidType() {
+<span class="fc" id="L274">		ProbeInserter pi = new ProbeInserter(0, &quot;()V&quot;, actualVisitor,</span>
+				arrayStrategy);
+<span class="nc" id="L276">		pi.visitFrame(Opcodes.F_SAME, 0, null, 0, null);</span>
+<span class="nc" id="L277">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

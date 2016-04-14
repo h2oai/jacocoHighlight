@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NodePageTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.page</a> &gt; <span class="el_source">NodePageTest.java</span></div><h1>NodePageTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.page;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+import java.io.IOException;
+
+import org.jacoco.core.analysis.CoverageNodeImpl;
+import org.jacoco.core.analysis.ICoverageNode;
+import org.jacoco.core.analysis.ICoverageNode.ElementType;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link NodePage}.
+ */
+<span class="fc" id="L29">public class NodePageTest extends PageTestBase {</span>
+
+	private CoverageNodeImpl node;
+
+	private NodePage&lt;ICoverageNode&gt; page;
+
+<span class="fc" id="L35">	private class TestNodePage extends NodePage&lt;ICoverageNode&gt; {</span>
+
+<span class="fc" id="L37">		protected TestNodePage(ICoverageNode node, ReportPage parent) {</span>
+<span class="fc" id="L38">			super(node, parent, rootFolder, NodePageTest.this.context);</span>
+<span class="fc" id="L39">		}</span>
+
+		@Override
+		protected void content(HTMLElement body) throws IOException {
+<span class="nc" id="L43">		}</span>
+
+		@Override
+		protected String getFileName() {
+<span class="nc" id="L47">			return &quot;index.html&quot;;</span>
+		}
+
+	}
+
+	@Before
+	@Override
+	public void setup() throws Exception {
+<span class="fc" id="L55">		super.setup();</span>
+<span class="fc" id="L56">		node = new CoverageNodeImpl(ElementType.GROUP, &quot;Test&quot;);</span>
+<span class="fc" id="L57">		page = new TestNodePage(node, null);</span>
+<span class="fc" id="L58">	}</span>
+
+	@Test
+	public void testGetNode() throws IOException {
+<span class="fc" id="L62">		assertSame(node, page.getNode());</span>
+<span class="fc" id="L63">	}</span>
+
+	@Test
+	public void testGetLinkLabel() throws IOException {
+<span class="fc" id="L67">		assertEquals(&quot;Test&quot;, page.getLinkLabel());</span>
+<span class="fc" id="L68">	}</span>
+
+	@Test
+	public void testGetLinkStyle1() throws IOException {
+<span class="fc" id="L72">		assertEquals(&quot;el_report&quot;, page.getLinkStyle());</span>
+<span class="fc" id="L73">	}</span>
+
+	@Test
+	public void testGetLinkStyle2() throws IOException {
+<span class="fc" id="L77">		final TestNodePage group = new TestNodePage(node, page);</span>
+<span class="fc" id="L78">		assertEquals(&quot;el_group&quot;, group.getLinkStyle());</span>
+<span class="fc" id="L79">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

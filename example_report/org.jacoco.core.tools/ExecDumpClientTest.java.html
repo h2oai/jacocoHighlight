@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ExecDumpClientTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.core.tools</a> &gt; <span class="el_source">ExecDumpClientTest.java</span></div><h1>ExecDumpClientTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.core.tools;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.jacoco.core.data.SessionInfo;
+import org.jacoco.core.runtime.IRemoteCommandVisitor;
+import org.jacoco.core.runtime.RemoteControlReader;
+import org.jacoco.core.runtime.RemoteControlWriter;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link ExecDumpClient}.
+ */
+<span class="fc" id="L39">public class ExecDumpClientTest {</span>
+
+	private ExecDumpClient client;
+	private List&lt;String&gt; callbacks;
+
+	private boolean dumpRequested;
+	private boolean resetRequested;
+
+	private ServerSocket server;
+
+	@Before
+	public void setup() {
+<span class="fc" id="L51">		callbacks = new ArrayList&lt;String&gt;();</span>
+<span class="fc" id="L52">		client = new ExecDumpClient() {</span>
+			@Override
+			protected void onConnecting(InetAddress address, int port) {
+<span class="fc" id="L55">				callbacks.add(&quot;onConnecting&quot;);</span>
+<span class="fc" id="L56">			}</span>
+
+			@Override
+			protected void onConnectionFailure(IOException exception) {
+<span class="fc" id="L60">				callbacks.add(&quot;onConnectionFailure&quot;);</span>
+<span class="fc" id="L61">			}</span>
+		};
+<span class="fc" id="L63">	}</span>
+
+	@After
+	public void teardown() throws IOException {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">		if (server != null) {</span>
+<span class="fc" id="L68">			server.close();</span>
+		}
+<span class="fc" id="L70">	}</span>
+
+	@Test
+	public void testNoRetries() throws IOException {
+		try {
+<span class="nc" id="L75">			client.dump((String) null, getFreePort());</span>
+<span class="nc" id="L76">			fail(&quot;ConnectException expected&quot;);</span>
+<span class="fc" id="L77">		} catch (ConnectException e) {</span>
+			// expected
+<span class="nc" id="L79">		}</span>
+
+<span class="fc" id="L81">		assertEquals(Arrays.asList(&quot;onConnecting&quot;), callbacks);</span>
+<span class="fc" id="L82">	}</span>
+
+	@Test
+	public void testWithRetries() throws IOException {
+<span class="fc" id="L86">		client.setRetryCount(3);</span>
+<span class="fc" id="L87">		client.setRetryDelay(0);</span>
+		try {
+<span class="nc" id="L89">			client.dump((String) null, getFreePort());</span>
+<span class="nc" id="L90">			fail(&quot;ConnectException expected&quot;);</span>
+<span class="fc" id="L91">		} catch (ConnectException e) {</span>
+			// expected
+<span class="nc" id="L93">		}</span>
+
+<span class="fc" id="L95">		assertEquals(Arrays.asList( // Initial attempt</span>
+				&quot;onConnecting&quot;,
+				// 1. Retry
+				&quot;onConnectionFailure&quot;, &quot;onConnecting&quot;,
+				// 2. Retry
+				&quot;onConnectionFailure&quot;, &quot;onConnecting&quot;,
+				// 3. Retry
+				&quot;onConnectionFailure&quot;, &quot;onConnecting&quot;)
+
+		, callbacks);
+<span class="fc" id="L105">	}</span>
+
+	@Test
+	public void testDump() throws IOException {
+<span class="fc" id="L109">		int port = createExecServer();</span>
+<span class="fc" id="L110">		ExecFileLoader loader = client.dump((String) null, port);</span>
+<span class="fc" id="L111">		assertTrue(dumpRequested);</span>
+<span class="fc" id="L112">		assertFalse(resetRequested);</span>
+
+<span class="fc" id="L114">		List&lt;SessionInfo&gt; infos = loader.getSessionInfoStore().getInfos();</span>
+<span class="fc" id="L115">		assertEquals(1, infos.size());</span>
+<span class="fc" id="L116">		assertEquals(&quot;TestId&quot;, infos.get(0).getId());</span>
+<span class="fc" id="L117">	}</span>
+
+	@Test
+	public void testReset() throws IOException {
+<span class="fc" id="L121">		int port = createExecServer();</span>
+<span class="fc" id="L122">		client.setDump(false);</span>
+<span class="fc" id="L123">		client.setReset(true);</span>
+<span class="fc" id="L124">		client.dump((String) null, port);</span>
+<span class="fc" id="L125">		assertFalse(dumpRequested);</span>
+<span class="fc" id="L126">		assertTrue(resetRequested);</span>
+<span class="fc" id="L127">	}</span>
+
+	private int getFreePort() throws IOException {
+<span class="fc" id="L130">		final ServerSocket server = new ServerSocket(0, 0,</span>
+				InetAddress.getByName(null));
+<span class="fc" id="L132">		final int port = server.getLocalPort();</span>
+<span class="fc" id="L133">		server.close();</span>
+<span class="fc" id="L134">		return port;</span>
+	}
+
+	private int createExecServer() throws IOException {
+<span class="fc" id="L138">		server = new ServerSocket(0, 0, InetAddress.getByName(null));</span>
+<span class="fc" id="L139">		new Thread(new Runnable() {</span>
+			public void run() {
+				try {
+<span class="fc" id="L142">					handleConnection(server.accept());</span>
+<span class="nc" id="L143">				} catch (IOException e) {</span>
+					// ignore
+<span class="fc" id="L145">				}</span>
+<span class="fc" id="L146">			}</span>
+		}).start();
+<span class="fc" id="L148">		return server.getLocalPort();</span>
+	}
+
+	private void handleConnection(Socket socket) throws IOException {
+<span class="fc" id="L152">		final RemoteControlWriter writer = new RemoteControlWriter(</span>
+				socket.getOutputStream());
+<span class="fc" id="L154">		final RemoteControlReader reader = new RemoteControlReader(</span>
+				socket.getInputStream());
+<span class="fc" id="L156">		reader.setRemoteCommandVisitor(new IRemoteCommandVisitor() {</span>
+			public void visitDumpCommand(boolean dump, boolean reset)
+					throws IOException {
+<span class="fc" id="L159">				dumpRequested = dump;</span>
+<span class="fc" id="L160">				resetRequested = reset;</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">				if (dump) {</span>
+<span class="fc" id="L162">					writer.visitSessionInfo(new SessionInfo(&quot;TestId&quot;, 100, 200));</span>
+				}
+<span class="fc" id="L164">				writer.sendCmdOk();</span>
+<span class="fc" id="L165">			}</span>
+		});
+<span class="fc" id="L167">		reader.read();</span>
+<span class="fc" id="L168">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

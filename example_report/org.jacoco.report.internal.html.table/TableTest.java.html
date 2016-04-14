@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TableTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.table</a> &gt; <span class="el_source">TableTest.java</span></div><h1>TableTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.table;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
+import org.jacoco.core.analysis.CounterComparator;
+import org.jacoco.core.analysis.CoverageNodeImpl;
+import org.jacoco.core.analysis.ICoverageNode;
+import org.jacoco.core.analysis.ICoverageNode.CounterEntity;
+import org.jacoco.core.analysis.ICoverageNode.ElementType;
+import org.jacoco.core.internal.analysis.CounterImpl;
+import org.jacoco.report.MemoryMultiReportOutput;
+import org.jacoco.report.internal.ReportOutputFolder;
+import org.jacoco.report.internal.html.HTMLDocument;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.jacoco.report.internal.html.HTMLSupport;
+import org.jacoco.report.internal.html.resources.Resources;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link Table}.
+ */
+<span class="fc" id="L42">public class TableTest {</span>
+
+	private MemoryMultiReportOutput output;
+
+	private ReportOutputFolder root;
+
+	private Resources resources;
+
+	private HTMLDocument doc;
+
+	private HTMLElement body;
+
+	private Table table;
+
+	@Before
+	public void setup() throws IOException {
+<span class="fc" id="L58">		output = new MemoryMultiReportOutput();</span>
+<span class="fc" id="L59">		root = new ReportOutputFolder(output);</span>
+<span class="fc" id="L60">		resources = new Resources(root);</span>
+<span class="fc" id="L61">		doc = new HTMLDocument(root.createFile(&quot;Test.html&quot;), &quot;UTF-8&quot;);</span>
+<span class="fc" id="L62">		doc.head().title();</span>
+<span class="fc" id="L63">		body = doc.body();</span>
+<span class="fc" id="L64">		table = new Table();</span>
+<span class="fc" id="L65">	}</span>
+
+	@After
+	public void teardown() throws IOException {
+<span class="fc" id="L69">		output.close();</span>
+<span class="fc" id="L70">		output.assertAllClosed();</span>
+<span class="fc" id="L71">	}</span>
+
+	@Test
+	public void testCallbackSequence() throws IOException {
+<span class="fc" id="L75">		final IColumnRenderer recorder = new StubRenderer(</span>
+<span class="fc" id="L76">				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)) {</span>
+
+<span class="fc" id="L78">			private final StringBuilder store = new StringBuilder();</span>
+
+			@Override
+			public boolean init(List&lt;? extends ITableItem&gt; items,
+					ICoverageNode total) {
+<span class="fc" id="L83">				store.append(&quot;init-&quot;);</span>
+<span class="fc" id="L84">				return true;</span>
+			}
+
+			@Override
+			public void footer(HTMLElement td, ICoverageNode total,
+					Resources resources, ReportOutputFolder base) {
+<span class="fc" id="L90">				store.append(&quot;footer-&quot;);</span>
+<span class="fc" id="L91">			}</span>
+
+			@Override
+			public void item(HTMLElement td, ITableItem item,
+					Resources resources, ReportOutputFolder base) {
+<span class="fc" id="L96">				store.append(&quot;item&quot;).append(item.getLinkLabel()).append(&quot;-&quot;);</span>
+<span class="fc" id="L97">			}</span>
+
+			@Override
+			public String toString() {
+<span class="fc" id="L101">				return store.toString();</span>
+			}
+
+		};
+<span class="fc" id="L105">		final List&lt;ITableItem&gt; items = Arrays.asList(createItem(&quot;A&quot;, 1),</span>
+				createItem(&quot;B&quot;, 2), createItem(&quot;C&quot;, 3));
+<span class="fc" id="L107">		table.add(&quot;Header&quot;, null, recorder, false);</span>
+<span class="fc" id="L108">		table.render(body, items, createTotal(&quot;Sum&quot;, 6), resources, root);</span>
+<span class="fc" id="L109">		doc.close();</span>
+<span class="fc" id="L110">		assertEquals(&quot;init-footer-itemA-itemB-itemC-&quot;, recorder.toString());</span>
+<span class="fc" id="L111">	}</span>
+
+	@Test
+	public void testInvisible() throws IOException {
+<span class="fc" id="L115">		final IColumnRenderer column = new StubRenderer(</span>
+<span class="fc" id="L116">				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)) {</span>
+
+			@Override
+			public boolean init(List&lt;? extends ITableItem&gt; items,
+					ICoverageNode total) {
+<span class="fc" id="L121">				return false;</span>
+			}
+
+			@Override
+			public void footer(HTMLElement td, ICoverageNode total,
+					Resources resources, ReportOutputFolder base) {
+<span class="nc" id="L127">				fail();</span>
+<span class="nc" id="L128">			}</span>
+
+			@Override
+			public void item(HTMLElement td, ITableItem item,
+					Resources resources, ReportOutputFolder base) {
+<span class="nc" id="L133">				fail();</span>
+<span class="nc" id="L134">			}</span>
+		};
+<span class="fc" id="L136">		final List&lt;ITableItem&gt; items = Arrays.asList(createItem(&quot;A&quot;, 1));</span>
+<span class="fc" id="L137">		table.add(&quot;Header&quot;, null, column, false);</span>
+<span class="fc" id="L138">		table.render(body, items, createTotal(&quot;Sum&quot;, 1), resources, root);</span>
+<span class="fc" id="L139">		doc.close();</span>
+<span class="fc" id="L140">	}</span>
+
+	@Test(expected = IllegalStateException.class)
+	public void testTwoDefaultSorts() throws IOException {
+<span class="fc" id="L144">		doc.close();</span>
+<span class="fc" id="L145">		table.add(&quot;Header1&quot;, null, new StubRenderer(</span>
+				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)), true);
+<span class="nc" id="L147">		table.add(&quot;Header2&quot;, null, new StubRenderer(</span>
+				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)), true);
+<span class="nc" id="L149">	}</span>
+
+	@Test
+	public void testSortIds() throws Exception {
+<span class="fc" id="L153">		final List&lt;ITableItem&gt; items = Arrays.asList(createItem(&quot;C&quot;, 3),</span>
+				createItem(&quot;E&quot;, 4), createItem(&quot;A&quot;, 1), createItem(&quot;D&quot;, 2));
+<span class="fc" id="L155">		table.add(&quot;Forward&quot;, null, new StubRenderer(</span>
+				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)), false);
+<span class="fc" id="L157">		table.add(</span>
+				&quot;Reverse&quot;,
+				null,
+				new StubRenderer(CounterComparator.TOTALITEMS.reverse().on(
+						CounterEntity.CLASS)), false);
+<span class="fc" id="L162">		table.render(body, items, createTotal(&quot;Sum&quot;, 6), resources, root);</span>
+<span class="fc" id="L163">		doc.close();</span>
+
+<span class="fc" id="L165">		final HTMLSupport support = new HTMLSupport();</span>
+<span class="fc" id="L166">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+
+		// The elements in Column 1 are sorted in forward order:
+<span class="fc" id="L169">		assertEquals(&quot;sortable&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/thead/tr/td[1]/@class&quot;));
+<span class="fc" id="L171">		assertEquals(&quot;a&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/thead/tr/td[1]/@id&quot;));
+<span class="fc" id="L173">		assertEquals(&quot;a2&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[1]/td[1]/@id&quot;));
+<span class="fc" id="L175">		assertEquals(&quot;a3&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[2]/td[1]/@id&quot;));
+<span class="fc" id="L177">		assertEquals(&quot;a0&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[3]/td[1]/@id&quot;));
+<span class="fc" id="L179">		assertEquals(&quot;a1&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[4]/td[1]/@id&quot;));
+
+		// The elements in Column 2 are sorted in reverse order:
+<span class="fc" id="L183">		assertEquals(&quot;sortable&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/thead/tr/td[2]/@class&quot;));
+<span class="fc" id="L185">		assertEquals(&quot;b&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/thead/tr/td[2]/@id&quot;));
+<span class="fc" id="L187">		assertEquals(&quot;b1&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[1]/td[2]/@id&quot;));
+<span class="fc" id="L189">		assertEquals(&quot;b0&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[2]/td[2]/@id&quot;));
+<span class="fc" id="L191">		assertEquals(&quot;b3&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[3]/td[2]/@id&quot;));
+<span class="fc" id="L193">		assertEquals(&quot;b2&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[4]/td[2]/@id&quot;));
+<span class="fc" id="L195">	}</span>
+
+	@Test
+	public void testDefaultSorting() throws Exception {
+<span class="fc" id="L199">		final List&lt;ITableItem&gt; items = Arrays.asList(createItem(&quot;C&quot;, 3),</span>
+				createItem(&quot;E&quot;, 5), createItem(&quot;A&quot;, 1), createItem(&quot;D&quot;, 4),
+				createItem(&quot;B&quot;, 2));
+<span class="fc" id="L202">		table.add(&quot;Forward&quot;, null, new StubRenderer(</span>
+				CounterComparator.TOTALITEMS.on(CounterEntity.CLASS)), true);
+<span class="fc" id="L204">		table.render(body, items, createTotal(&quot;Sum&quot;, 1), resources, root);</span>
+<span class="fc" id="L205">		doc.close();</span>
+
+<span class="fc" id="L207">		final HTMLSupport support = new HTMLSupport();</span>
+<span class="fc" id="L208">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+
+<span class="fc" id="L210">		assertEquals(&quot;down sortable&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/thead/tr/td[1]/@class&quot;));
+<span class="fc" id="L212">		assertEquals(&quot;A&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[1]/td[1]&quot;));
+<span class="fc" id="L214">		assertEquals(&quot;B&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[2]/td[1]&quot;));
+<span class="fc" id="L216">		assertEquals(&quot;C&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[3]/td[1]&quot;));
+<span class="fc" id="L218">		assertEquals(&quot;D&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[4]/td[1]&quot;));
+<span class="fc" id="L220">		assertEquals(&quot;E&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tbody/tr[5]/td[1]&quot;));
+<span class="fc" id="L222">	}</span>
+
+	private ITableItem createItem(final String name, final int count) {
+<span class="fc" id="L225">		final ICoverageNode node = new CoverageNodeImpl(ElementType.GROUP, name) {</span>
+			{
+<span class="fc" id="L227">				this.classCounter = CounterImpl.getInstance(count, 0);</span>
+<span class="fc" id="L228">			}</span>
+		};
+<span class="fc" id="L230">		return new ITableItem() {</span>
+			public String getLinkLabel() {
+<span class="fc" id="L232">				return name;</span>
+			}
+
+			public String getLink(ReportOutputFolder base) {
+<span class="nc" id="L236">				return name + &quot;.html&quot;;</span>
+			}
+
+			public String getLinkStyle() {
+<span class="nc" id="L240">				return Resources.getElementStyle(node.getElementType());</span>
+			}
+
+			public ICoverageNode getNode() {
+<span class="fc" id="L244">				return node;</span>
+			}
+		};
+	}
+
+	private ICoverageNode createTotal(final String name, final int count) {
+<span class="fc" id="L250">		return new CoverageNodeImpl(ElementType.GROUP, name) {</span>
+			{
+<span class="fc" id="L252">				this.classCounter = CounterImpl.getInstance(count, 0);</span>
+<span class="fc" id="L253">			}</span>
+		};
+	}
+
+<span class="fc" id="L257">	private static class StubRenderer implements IColumnRenderer {</span>
+
+		private final Comparator&lt;ITableItem&gt; comparator;
+
+<span class="fc" id="L261">		StubRenderer(Comparator&lt;ICoverageNode&gt; comparator) {</span>
+<span class="fc" id="L262">			this.comparator = new TableItemComparator(comparator);</span>
+<span class="fc" id="L263">		}</span>
+
+		public boolean init(List&lt;? extends ITableItem&gt; items,
+				ICoverageNode total) {
+<span class="fc" id="L267">			return true;</span>
+		}
+
+		public void footer(HTMLElement td, ICoverageNode total,
+				Resources resources, ReportOutputFolder base) {
+<span class="fc" id="L272">		}</span>
+
+		public void item(HTMLElement td, ITableItem item, Resources resources,
+				ReportOutputFolder base) throws IOException {
+<span class="fc" id="L276">			td.text(item.getLinkLabel());</span>
+<span class="fc" id="L277">		}</span>
+
+		public Comparator&lt;ITableItem&gt; getComparator() {
+<span class="fc" id="L280">			return comparator;</span>
+		}
+
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MockServerSocketTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.agent.rt.internal.output</a> &gt; <span class="el_source">MockServerSocketTest.java</span></div><h1>MockServerSocketTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *
+ *******************************************************************************/
+package org.jacoco.agent.rt.internal.output;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Unit tests for {@link MockServerSocket}.
+ */
+<span class="fc" id="L34">public class MockServerSocketTest extends ExecutorTestBase {</span>
+
+	private ServerSocket serverSocket;
+
+	/**
+	 * To verify that the tests reflect the behavior of real TCP sockets this
+	 * flag can be set to &lt;code&gt;true&lt;/code&gt;.
+	 */
+<span class="fc" id="L42">	private static final boolean REAL_SOCKETS = Boolean</span>
+			.getBoolean(&quot;MockServerSocketTest.realSockets&quot;);
+
+	@Before
+	@Override
+	public void setup() throws Exception {
+<span class="fc" id="L48">		super.setup();</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (REAL_SOCKETS) {</span>
+<span class="nc" id="L50">			System.err.println(&quot;Using Real Sockets!&quot;);</span>
+<span class="nc" id="L51">			final InetAddress addr = InetAddress.getByName(&quot;localhost&quot;);</span>
+<span class="nc" id="L52">			serverSocket = new ServerSocket(16300, 1, addr);</span>
+<span class="nc" id="L53">		} else {</span>
+<span class="fc" id="L54">			serverSocket = new MockServerSocket();</span>
+		}
+<span class="fc" id="L56">	}</span>
+
+	@After
+	@Override
+	public void teardown() throws Exception {
+<span class="fc" id="L61">		serverSocket.close();</span>
+<span class="fc" id="L62">		super.teardown();</span>
+<span class="fc" id="L63">	}</span>
+
+	private Socket connect() throws Exception {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">		if (REAL_SOCKETS) {</span>
+<span class="nc" id="L67">			final InetAddress addr = InetAddress.getByName(&quot;localhost&quot;);</span>
+<span class="nc" id="L68">			return new Socket(addr, 16300);</span>
+		} else {
+<span class="fc" id="L70">			return ((MockServerSocket) serverSocket).connect();</span>
+		}
+
+	}
+
+	@Test
+	public void testClose() throws Exception {
+<span class="fc" id="L77">		assertFalse(serverSocket.isClosed());</span>
+<span class="fc" id="L78">		serverSocket.close();</span>
+<span class="fc" id="L79">		assertTrue(serverSocket.isClosed());</span>
+<span class="fc" id="L80">	}</span>
+
+	@Test(expected = SocketException.class)
+	public void testCloseWhileAccept() throws Throwable {
+<span class="fc" id="L84">		final Future&lt;Socket&gt; f = executor.submit(new Callable&lt;Socket&gt;() {</span>
+			public Socket call() throws Exception {
+<span class="nc" id="L86">				return serverSocket.accept();</span>
+			}
+		});
+<span class="fc" id="L89">		assertBlocks(f);</span>
+<span class="fc" id="L90">		serverSocket.close();</span>
+		try {
+<span class="nc" id="L92">			f.get();</span>
+<span class="fc" id="L93">		} catch (ExecutionException e) {</span>
+<span class="fc" id="L94">			throw e.getCause();</span>
+<span class="nc" id="L95">		}</span>
+<span class="nc" id="L96">	}</span>
+
+	@Test
+	public void testAccept() throws Exception {
+<span class="fc" id="L100">		final Future&lt;Socket&gt; f = executor.submit(new Callable&lt;Socket&gt;() {</span>
+			public Socket call() throws Exception {
+<span class="fc" id="L102">				return serverSocket.accept();</span>
+			}
+		});
+<span class="fc" id="L105">		assertBlocks(f);</span>
+<span class="fc" id="L106">		connect().getOutputStream().write(123);</span>
+<span class="fc" id="L107">		final Socket socket = f.get();</span>
+<span class="fc" id="L108">		assertNotNull(socket);</span>
+<span class="fc" id="L109">		assertEquals(123, socket.getInputStream().read());</span>
+<span class="fc" id="L110">	}</span>
+
+	@Test(expected = SocketException.class)
+	public void testAcceptOnClosedServerSocket() throws Exception {
+<span class="fc" id="L114">		serverSocket.close();</span>
+<span class="nc" id="L115">		serverSocket.accept();</span>
+<span class="nc" id="L116">	}</span>
+
+	@Test
+	public void testConnect() throws Exception {
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">		if (!REAL_SOCKETS) {</span>
+<span class="fc" id="L121">			final Future&lt;Socket&gt; f = executor.submit(new Callable&lt;Socket&gt;() {</span>
+				public Socket call() throws Exception {
+<span class="fc" id="L123">					return ((MockServerSocket) serverSocket).connect();</span>
+				}
+			});
+<span class="fc" id="L126">			assertBlocks(f);</span>
+<span class="fc" id="L127">			serverSocket.accept().getOutputStream().write(42);</span>
+<span class="fc" id="L128">			final Socket socket = f.get();</span>
+<span class="fc" id="L129">			assertNotNull(socket);</span>
+<span class="fc" id="L130">			assertEquals(42, socket.getInputStream().read());</span>
+		}
+<span class="fc" id="L132">	}</span>
+
+	@Test
+	public void testWaitForAccept() throws Exception {
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">		if (!REAL_SOCKETS) {</span>
+<span class="fc" id="L137">			final Future&lt;Void&gt; f = executor.submit(new Callable&lt;Void&gt;() {</span>
+				public Void call() throws Exception {
+<span class="fc" id="L139">					((MockServerSocket) serverSocket).waitForAccept();</span>
+<span class="fc" id="L140">					connect();</span>
+<span class="fc" id="L141">					return null;</span>
+				}
+			});
+<span class="fc" id="L144">			assertBlocks(f);</span>
+<span class="fc" id="L145">			serverSocket.accept();</span>
+<span class="fc" id="L146">			f.get();</span>
+		}
+<span class="fc" id="L148">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>

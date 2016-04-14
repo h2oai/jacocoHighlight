@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/highlight_report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>PercentageColumnTest.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">jacoco</a> &gt; <a href="index.source.html" class="el_package">org.jacoco.report.internal.html.table</a> &gt; <span class="el_source">PercentageColumnTest.java</span></div><h1>PercentageColumnTest.java</h1><pre class="source lang-java linenums">/*******************************************************************************
+ * Copyright (c) 2009, 2016 Mountainminds GmbH &amp; Co. KG and Contributors
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *    Marc R. Hoffmann - initial API and implementation
+ *    
+ *******************************************************************************/
+package org.jacoco.report.internal.html.table;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Comparator;
+import java.util.Locale;
+
+import org.jacoco.core.analysis.CoverageNodeImpl;
+import org.jacoco.core.analysis.ICoverageNode;
+import org.jacoco.core.analysis.ICoverageNode.CounterEntity;
+import org.jacoco.core.analysis.ICoverageNode.ElementType;
+import org.jacoco.core.internal.analysis.CounterImpl;
+import org.jacoco.report.MemoryMultiReportOutput;
+import org.jacoco.report.internal.ReportOutputFolder;
+import org.jacoco.report.internal.html.HTMLDocument;
+import org.jacoco.report.internal.html.HTMLElement;
+import org.jacoco.report.internal.html.HTMLSupport;
+import org.jacoco.report.internal.html.resources.Resources;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
+/**
+ * Unit tests for {@link PercentageColumn}.
+ */
+<span class="fc" id="L40">public class PercentageColumnTest {</span>
+
+	private MemoryMultiReportOutput output;
+
+	private ReportOutputFolder root;
+
+	private Resources resources;
+
+	private HTMLDocument doc;
+
+	private HTMLElement td;
+
+	private HTMLSupport support;
+
+	private IColumnRenderer column;
+
+	@Before
+	public void setup() throws Exception {
+<span class="fc" id="L58">		output = new MemoryMultiReportOutput();</span>
+<span class="fc" id="L59">		root = new ReportOutputFolder(output);</span>
+<span class="fc" id="L60">		resources = new Resources(root);</span>
+<span class="fc" id="L61">		doc = new HTMLDocument(root.createFile(&quot;Test.html&quot;), &quot;UTF-8&quot;);</span>
+<span class="fc" id="L62">		doc.head().title();</span>
+<span class="fc" id="L63">		td = doc.body().table(&quot;somestyle&quot;).tr().td();</span>
+<span class="fc" id="L64">		support = new HTMLSupport();</span>
+<span class="fc" id="L65">		column = new PercentageColumn(CounterEntity.LINE, Locale.ENGLISH);</span>
+<span class="fc" id="L66">	}</span>
+
+	@After
+	public void teardown() throws IOException {
+<span class="fc" id="L70">		output.close();</span>
+<span class="fc" id="L71">		output.assertAllClosed();</span>
+<span class="fc" id="L72">	}</span>
+
+	@Test
+	public void testInit() throws Exception {
+<span class="fc" id="L76">		assertTrue(column.init(null, null));</span>
+<span class="fc" id="L77">		doc.close();</span>
+<span class="fc" id="L78">	}</span>
+
+	@Test
+	public void testItem1() throws Exception {
+<span class="fc" id="L82">		final ITableItem item = createItem(100, 50);</span>
+<span class="fc" id="L83">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L84">		doc.close();</span>
+<span class="fc" id="L85">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L86">		assertEquals(&quot;33%&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L88">	}</span>
+
+	@Test
+	public void testItem2() throws Exception {
+<span class="fc" id="L92">		final ITableItem item = createItem(0, 0);</span>
+<span class="fc" id="L93">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L94">		doc.close();</span>
+<span class="fc" id="L95">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L96">		assertEquals(&quot;n/a&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L98">	}</span>
+
+	@Test
+	public void testLocale() throws Exception {
+<span class="fc" id="L102">		IColumnRenderer column = new PercentageColumn(CounterEntity.LINE,</span>
+				Locale.FRENCH);
+<span class="fc" id="L104">		final ITableItem item = createItem(0, 1000);</span>
+<span class="fc" id="L105">		column.item(td, item, resources, root);</span>
+<span class="fc" id="L106">		doc.close();</span>
+<span class="fc" id="L107">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L108">		assertEquals(&quot;100 %&quot;,</span>
+				support.findStr(doc, &quot;/html/body/table/tr/td[1]/text()&quot;));
+<span class="fc" id="L110">	}</span>
+
+	@Test
+	public void testFooter1() throws Exception {
+<span class="fc" id="L114">		final ITableItem item = createItem(20, 60);</span>
+<span class="fc" id="L115">		column.footer(td, item.getNode(), resources, root);</span>
+<span class="fc" id="L116">		doc.close();</span>
+<span class="fc" id="L117">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L118">		assertEquals(&quot;75%&quot;, support.findStr(doc, &quot;/html/body/table/tr&quot;));</span>
+<span class="fc" id="L119">	}</span>
+
+	@Test
+	public void testFooter2() throws Exception {
+<span class="fc" id="L123">		final ITableItem item = createItem(0, 0);</span>
+<span class="fc" id="L124">		column.footer(td, item.getNode(), resources, root);</span>
+<span class="fc" id="L125">		doc.close();</span>
+<span class="fc" id="L126">		final Document doc = support.parse(output.getFile(&quot;Test.html&quot;));</span>
+<span class="fc" id="L127">		assertEquals(&quot;n/a&quot;, support.findStr(doc, &quot;/html/body/table/tr&quot;));</span>
+<span class="fc" id="L128">	}</span>
+
+	@Test
+	public void testComparator() throws Exception {
+<span class="fc" id="L132">		final Comparator&lt;ITableItem&gt; c = column.getComparator();</span>
+<span class="fc" id="L133">		final ITableItem i1 = createItem(50, 50);</span>
+<span class="fc" id="L134">		final ITableItem i2 = createItem(800, 200);</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">		assertTrue(c.compare(i1, i2) &lt; 0);</span>
+<span class="pc bpc" id="L136" title="1 of 2 branches missed.">		assertTrue(c.compare(i2, i1) &gt; 0);</span>
+<span class="fc" id="L137">		assertEquals(0, c.compare(i1, i1));</span>
+<span class="fc" id="L138">		doc.close();</span>
+<span class="fc" id="L139">	}</span>
+
+	private ITableItem createItem(final int missed, final int covered) {
+<span class="fc" id="L142">		final ICoverageNode node = createNode(missed, covered);</span>
+<span class="fc" id="L143">		return new ITableItem() {</span>
+			public String getLinkLabel() {
+<span class="nc" id="L145">				return &quot;Foo&quot;;</span>
+			}
+
+			public String getLink(ReportOutputFolder base) {
+<span class="nc" id="L149">				return null;</span>
+			}
+
+			public String getLinkStyle() {
+<span class="nc" id="L153">				return Resources.getElementStyle(node.getElementType());</span>
+			}
+
+			public ICoverageNode getNode() {
+<span class="fc" id="L157">				return node;</span>
+			}
+		};
+	}
+
+	private CoverageNodeImpl createNode(final int missed, final int covered) {
+<span class="fc" id="L163">		return new CoverageNodeImpl(ElementType.GROUP, &quot;Foo&quot;) {</span>
+			{
+<span class="fc" id="L165">				this.lineCounter = CounterImpl.getInstance(missed, covered);</span>
+<span class="fc" id="L166">			}</span>
+		};
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.6.201602180812</span></div></body></html>
