@@ -14,6 +14,7 @@ import jacoco.report.internal.html.wrapper.CoverageWrapper;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
+import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.tools.ExecFileLoader;
 import org.jacoco.report.*;
 import org.jacoco.report.html.HTMLFormatter;
@@ -69,7 +70,6 @@ public class HighlightHTMLReportGenerator {
         // more than one bundle you will need to add a grouping node to your
         // report
         final IBundleCoverage bundleCoverage = analyzeStructure();
-
         createReport(bundleCoverage);
 
     }
@@ -120,7 +120,6 @@ public class HighlightHTMLReportGenerator {
         for(File dir : classesDirectories) {
             analyzer.analyzeAll(dir);
         }
-
         return coverageBuilder.getBundle(title);
     }
 
@@ -143,6 +142,7 @@ public class HighlightHTMLReportGenerator {
                     if (++i >= args.length) usage();
                     PathMatcher spm = FileSystems.getDefault().getPathMatcher("glob:" + args[i]);
                     findFiles(root, spm, params.sourceDirectories);
+                    System.out.println(params.sourceDirectories);
                     break;
                 case "-e":
                     if (++i >= args.length) usage();
