@@ -15,8 +15,8 @@ JaCoCo version 0.7.6 is required.
 ### Command Line
 `java -jar path_to_jar [root_dir] [-o out_dir] [-e exec_files] [-c class_files] [-s source_roots] [-p params_file]`
 
-| --- | --- | --- |
 | Variable | Usage | Default |
+| --- | --- | --- |
 | `root_dir` | Working directory | `.` |
 | `out_dir` | Directory to output HTML report in respect to `root_dir` | `report` |
 | `exec_files` | Path to `.exec` files in respect to `root_dir` _(accepts glob patterns)_ | `*.exec` |
