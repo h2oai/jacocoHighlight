@@ -39,7 +39,7 @@ Each document can accept the following scalars:
 | [`propagate`](#propagate) | Whether the criteria should also be applied to subclasses/methods | Yes           |
 | [`default`](#default)     | Default criteria of the hit ratio for each coverage counter       | Yes           |
 
-### package
+### `package`
 `package` defines the package to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
 
 List of allowed mappings:
@@ -50,7 +50,7 @@ List of allowed mappings:
 
 If a `package` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
 
-### class
+### `class`
 `class` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the class. If `class` is defined, the value for `method` will **not** be carried over from the previous document.
 
 List of expected mappings:
@@ -72,10 +72,12 @@ List of expected mappings:
 
 If a `method` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values. 
 
-### propagate
+### `values`
+
+### `propagate`
 `propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be applied to every class/method it contains. By default `propagate` is set to `false`.
 
-### default
+### `default`
 `default` is used to specify the coverage criteria for each field that should be used if nothing was provided. For example, if the criteria for the "instruction" field in a package was undefined, then it will be set to whatever `default` has for that field. It can either be a number or a dictionary of values. If the former, then that value is applied to every field. By default each field is given a value of `0`.
 
 ### Examples
