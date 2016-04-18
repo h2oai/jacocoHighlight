@@ -61,7 +61,7 @@ List of expected mappings:
 
 If a `class` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
 
-### method
+### `method`
 `method` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the method.
 
 List of expected mappings:
