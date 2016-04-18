@@ -26,27 +26,72 @@ JaCoCo version 0.7.6 is required.
 
 
 ## Parameter File
-The parameter file specifies the passing coverage criteria for each item in the report. The file should be written according to the [YAML Version 1.1 specs](http://yaml.org/spec/1.1/ "YAML 1.1 Specs"), where the criteria for each item is in its own separate document. Each document can accept the following scalars:
+The parameter file specifies the passing coverage criteria for each item in the report. The file should be written according to the [YAML Version 1.1 specs](http://yaml.org/spec/1.1/ "YAML 1.1 Specs"), where the criteria for each item is in its own separate document. The values defined for some scalars in a document are carried over to the next one (the exact list is specified below).
 
-| Scalar        | Description                                                   |
-| ------------- | ------------------------------------------------------------- |
-| `package`     | Descriptors of the package, if any                            |
-| `class`       | Descriptors of the class, if any                              |
-| `method`      | Descriptors of the method, if any                             |
-| `values`      | Values for each coverage field                                |
-| `propagate`   | Whether the criteria should be applied to subclasses/methods  |
-| `default`     | The default value of each coverage field                      |
+Each document can accept the following scalars:
 
-### `default`
+| Scalar                    | Description                                                       | Carried Over? |
+| ------------------------- | ----------------------------------------------------------------- | :-----------: |
+| [`package`](#package)     | Descriptors of the package, if any                                | Yes           |
+| [`class`](#class)         | Descriptors of the class, if any                                  | Yes           |
+| [`method`](#method)       | Descriptors of the method, if any                                 | Yes           |
+| [`values`](#values)       | Minimum criteria of the hit ratio for each coverage counter       | No            |
+| [`propagate`](#propagate) | Whether the criteria should also be applied to subclasses/methods | Yes           |
+| [`default`](#default)     | Default criteria of the hit ratio for each coverage counter       | Yes           |
+
+### package
+`package` defines the package to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
+
+List of allowed mappings:
+
+| Scalar    | Type      | Description                                               | Default   |
+| --------- | --------- | --------------------------------------------------------- | :-------: |
+| `name`    | `String`  | Package name _(supports wildcard characters `*` and `?`)_ | undefined |
+
+If a `package` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
+
+### class
+`class` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the class. If `class` is defined, the value for `method` will **not** be carried over from the previous document.
+
+List of expected mappings:
+
+| Scalar    | Type      | Description                                               | Default   |
+| --------- | --------- | --------------------------------------------------------- | :-------: |
+| `name`    | `String`  | Class name _(supports wildcard characters `*` and `?`)_   | undefined |
+
+If a `class` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
+
+### method
+`method` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the method.
+
+List of expected mappings:
+
+| Scalar    | Type      | Description                                               | Default   |
+| --------- | --------- | --------------------------------------------------------- | :-------: |
+| `name`    | `String`  | Method name _(supports wildcard characters `*` and `?`)_  | undefined |
+
+If a `method` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values. 
+
+### propagate
+`propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be applied to every class/method it contains. By default `propagate` is set to `false`.
+
+### default
 `default` is used to specify the coverage criteria for each field that should be used if nothing was provided. For example, if the criteria for the "instruction" field in a package was undefined, then it will be set to whatever `default` has for that field. It can either be a number or a dictionary of values. If the former, then that value is applied to every field. By default each field is given a value of `0`.
 
-Example:
+### Examples
 
-    default: 50 # Sets each field to require 50% or more coverage by default
-    ---
-    default: {instruction: 30, complexity: 40, line: 10, class: 50, method: 50, branch: 0}
+```
+# Set every item in the bundle to have minimum coverage of 50%
+package: {name: "*"}
+values: {instruction: 50, branch: 50, line: 50, complexity: 50, method: 50, class: 50}
+propagate: true
+---
+# Alternitavely, it can be written like this
+package: "*"
+values: 50
+propagate: true
+```
 
-### `package`
 
 ## To Do
 - Tests!
