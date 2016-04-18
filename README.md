@@ -27,6 +27,7 @@ JaCoCo version 0.7.6 is required.
 
 ## Parameter File
 The parameter file specifies the passing coverage criteria for each item in the report. The file should be written according to the [YAML Version 1.1 specs](http://yaml.org/spec/1.1/ "YAML 1.1 Specs"), where the criteria for each item is in its own separate document. Each document can accept the following scalars:
+
 | Scalar        | Description                                                   |
 | ------------- | ------------------------------------------------------------- |
 | `package`     | Descriptors of the package, if any                            |
@@ -40,6 +41,7 @@ The parameter file specifies the passing coverage criteria for each item in the 
 `default` is used to specify the coverage criteria for each field that should be used if nothing was provided. For example, if the criteria for the "instruction" field in a package was undefined, then it will be set to whatever `default` has for that field. It can either be a number or a dictionary of values. If the former, then that value is applied to every field. By default each field is given a value of `0`.
 
 Example:
+
     default: 50 # Sets each field to require 50% or more coverage by default
     ---
     default: {instruction: 30, complexity: 40, line: 10, class: 50, method: 50, branch: 0}
