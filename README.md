@@ -74,15 +74,24 @@ If a `method` is instead assigned a String, then it will be interpreted as a pac
 
 ### `values`
 
+| Scalar        | Type          | Description                           |
+| ------------- | ------------- | ------------------------------------- |
+| `instruction` | `int|float`   | Minimum instruction hit percentage    |
+| `branch`      | `int|float`   | Minimum branch hit percentage         |
+| `complexity`  | `int|float`   | Minimum complexity hit percentage     |
+| `line`        | `int|float`   | Minimum line hit percentage           |
+| `method`      | `int|float`   | Minimum method hit percentage         |
+| `class`       | `int|float`   | Minimum class hit percentage          |
+
 ### `propagate`
-`propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be applied to every class/method it contains. By default `propagate` is set to `false`.
+`propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be recursively applied to every class/method it contains. By default `propagate` is set to `false`.
 
 ### `default`
 `default` is used to specify the coverage criteria for each field that should be used if nothing was provided. For example, if the criteria for the "instruction" field in a package was undefined, then it will be set to whatever `default` has for that field. It can either be a number or a dictionary of values. If the former, then that value is applied to every field. By default each field is given a value of `0`.
 
 ### Examples
 
-```
+```YAML
 # Set every item in the bundle to have minimum coverage of 50%
 package: {name: "*"}
 values: {instruction: 50, branch: 50, line: 50, complexity: 50, method: 50, class: 50}
@@ -92,6 +101,12 @@ propagate: true
 package: "*"
 values: 50
 propagate: true
+---
+# Set class "bar" in package "foo" to have a minimum instruction coverage of 45%
+package: "foo"
+class: "bar"
+values: {instruction: 45}
+propagate: false
 ```
 
 
