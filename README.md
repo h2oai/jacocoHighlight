@@ -1,7 +1,7 @@
 # jacocoHighlight
 **_[Note: This is a work in progress. API is subject to change.]_**
 
-[Download]()
+[Download](http://s3.amazonaws.com/nishant-tests-coverage/jacocoHighlight_app.jar "Download Jar")
 
 This is a wrapper of [JaCoCo](http://eclemma.org/jacoco/ "JaCoCo") that expands on its functionalities in making HTML reports. Specifically, it allows for the highlighting of cells to indicate a pass or fail.
 
