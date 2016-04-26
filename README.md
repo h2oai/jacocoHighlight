@@ -1,6 +1,8 @@
 # jacocoHighlight
 **_[Note: This is a work in progress. API is subject to change.]_**
 
+[Download]()
+
 This is a wrapper of [JaCoCo](http://eclemma.org/jacoco/ "JaCoCo") that expands on its functionalities in making HTML reports. Specifically, it allows for the highlighting of cells to indicate a pass or fail.
 
 [Example](http://s3.amazonaws.com/nishant-tests-coverage/example_report/index.html "JaCoCo Example")  
@@ -40,34 +42,34 @@ Each document can accept the following scalars:
 | [`default`](#default)     | Default criteria of the hit ratio for each coverage counter       | Yes           |
 
 ### `package`
-`package` defines the package to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
+`package` defines the package(s) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
 
 List of allowed mappings:
 
 | Scalar    | Type      | Description                                               | Default   |
-| --------- | --------- | --------------------------------------------------------- | :-------: |
+| --------- | :-------: | --------------------------------------------------------- | :-------: |
 | `name`    | `String`  | Package name _(supports wildcard characters `*` and `?`)_ | undefined |
 
 If a `package` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
 
 ### `class`
-`class` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the class. If `class` is defined, the value for `method` will **not** be carried over from the previous document.
+`class` defines the class(es) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the class. If `class` is defined, the value for `method` will **not** be carried over from the previous document.
 
 List of expected mappings:
 
 | Scalar    | Type      | Description                                               | Default   |
-| --------- | --------- | --------------------------------------------------------- | :-------: |
+| --------- | :-------: | --------------------------------------------------------- | :-------: |
 | `name`    | `String`  | Class name _(supports wildcard characters `*` and `?`)_   | undefined |
 
 If a `class` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
 
 ### `method`
-`method` defines the class to apply the coverage criteria to. The scalar expects to be mapped to a sequence of mappings that define various aspects of the method.
+`method` defines the method(s) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the method.
 
 List of expected mappings:
 
 | Scalar    | Type      | Description                                               | Default   |
-| --------- | --------- | --------------------------------------------------------- | :-------: |
+| --------- | :-------: | --------------------------------------------------------- | :-------: |
 | `name`    | `String`  | Method name _(supports wildcard characters `*` and `?`)_  | undefined |
 
 If a `method` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values. 
@@ -75,13 +77,13 @@ If a `method` is instead assigned a String, then it will be interpreted as a pac
 ### `values`
 
 | Scalar        | Type          | Description                           |
-| ------------- | ------------- | ------------------------------------- |
-| `instruction` | `int|float`   | Minimum instruction hit percentage    |
-| `branch`      | `int|float`   | Minimum branch hit percentage         |
-| `complexity`  | `int|float`   | Minimum complexity hit percentage     |
-| `line`        | `int|float`   | Minimum line hit percentage           |
-| `method`      | `int|float`   | Minimum method hit percentage         |
-| `class`       | `int|float`   | Minimum class hit percentage          |
+| ------------- | :-----------: | --------------------------------------|
+| `instruction` | `int | float` | Minimum instruction hit percentage    |
+| `branch`      | `int | float` | Minimum branch hit percentage         |
+| `complexity`  | `int | float` | Minimum complexity hit percentage     |
+| `line`        | `int | float` | Minimum line hit percentage           |
+| `method`      | `int | float` | Minimum method hit percentage         |
+| `class`       | `int | float` | Minimum class hit percentage          |
 
 ### `propagate`
 `propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be recursively applied to every class/method it contains. By default `propagate` is set to `false`.
