@@ -6,8 +6,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
-import org.jacoco.report.html.HighlightHTMLFormatter;
-import org.jacoco.report.internal.html.wrapper.CoverageWrapper;
+import jacoco.report.html.HighlightHTMLFormatter;
+import jacoco.report.internal.html.wrapper.CoverageWrapper;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
@@ -93,8 +93,9 @@ public class HighlightHTMLReportGenerator {
             src_dir.add(new DirectorySourceFileLocator(
                     dir, "utf-8", 4));
         }
+        //IReportGroupVisitor g = visitor.visitGroup("h2o-core");
+        //g.visitBundle(b, src_dir);
         visitor.visitBundle(b, src_dir);
-
         // Signal end of structure information to allow report to write all
         // information out
         visitor.visitEnd();
