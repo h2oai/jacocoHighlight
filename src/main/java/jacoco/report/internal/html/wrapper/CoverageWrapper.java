@@ -3,6 +3,8 @@ package jacoco.report.internal.html.wrapper;
 import jacoco.core.internal.analysis.*;
 import jacoco.core.analysis.IHighlightNode;
 import jacoco.report.internal.html.parse.ParseItem;
+import jacoco.report.internal.html.parse.NewYAMLParser;
+import jacoco.report.internal.html.parse.ParseItem;
 import jacoco.report.internal.html.parse.YAMLParser;
 import org.jacoco.core.analysis.*;
 
