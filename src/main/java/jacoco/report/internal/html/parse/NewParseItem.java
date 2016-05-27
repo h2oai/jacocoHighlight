@@ -11,6 +11,11 @@ import java.util.Map;
  * Created by nkalonia1 on 3/27/16.
  */
 public abstract class NewParseItem {
+
+    public enum itemType {
+        INVALID, GROUP, BUNDLE, PACKAGE, CLASS, METHOD
+    }
+
     List<NewParseItem> children;
     boolean propagate;
     Map<ICoverageNode.CounterEntity, Double> values;
@@ -45,5 +50,7 @@ public abstract class NewParseItem {
     }
 
     public boolean isValid() { return true; }
+
+    public abstract itemType getType();
 
 }

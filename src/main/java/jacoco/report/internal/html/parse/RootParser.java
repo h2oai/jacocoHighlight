@@ -3,10 +3,7 @@ package jacoco.report.internal.html.parse;
 import jacoco.report.internal.html.parse.util.NameString;
 import org.jacoco.core.analysis.ICoverageNode;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by nkalonia1 on 5/11/16.
@@ -33,15 +30,14 @@ public class RootParser {
 
             log("Parsing properties...");
             Object val;
-            List l = (List) m.get(key);
+            m = (Map) m.get(key);
 
-            NewParseItem pi = parseRequired((Map) l.get(0));
+            NewParseItem pi = parseRequired(m);
             if (!pi.isValid()) return new InvalidParseItem();
             parseValues(m, pi);
             parsePropagate(m, pi);
 
-            Iterator i = l.iterator();
-            i.next();
+            Iterator i = getChildIterator(m);
             log("Parsing children...");
             GroupParser g = new GroupParser(yaml);
             while(i.hasNext()) {
@@ -68,18 +64,8 @@ public class RootParser {
 
     protected boolean verify(Map m) {
         Object val;
-        if (!((val = m.get("group")) instanceof List)) {
-            err("\"" + key + "\" should map to a List");
-            return false;
-        }
-        List l = (List) val;
-        if (l.size() < 1) {
-            err("List is empty");
-            return false;
-        }
-        log("Checking for properties...");
-        if (!(l.get(0) instanceof Map)) {
-            err("Properties is not a map");
+        if (!((val = m.get(key)) instanceof Map)) {
+            err("\"" + key + "\" should map to a Map");
             return false;
         }
         return true;
@@ -173,6 +159,22 @@ public class RootParser {
             }
         }
         return p;
+    }
+
+    protected Iterator getChildIterator(Map m) {
+        Object val;
+        if ((val = m.get("children")) instanceof List) {
+            log("Found \"children\"");
+            return ((List) val).iterator();
+        } else if (val instanceof Map) {
+            log("Found \"children\"");
+            List<Map> l = new ArrayList<Map>(1);
+            l.add((Map) val);
+            return l.iterator();
+        } else {
+            log("No children found");
+            return (new ArrayList<Map>(0)).iterator();
+        }
     }
 
     protected void log(String s) {

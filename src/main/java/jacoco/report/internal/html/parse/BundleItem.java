@@ -17,4 +17,9 @@ public class BundleItem extends NewParseItem {
     public boolean matches(ICoverageNode name) {
         return name.getElementType() == ICoverageNode.ElementType.BUNDLE && isDefined() && bundle_name.matches(name.getName());
     }
+
+    @Override
+    public itemType getType() {
+        return itemType.BUNDLE;
+    }
 }

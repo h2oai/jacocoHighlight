@@ -1,4 +1,4 @@
-package jacoco.report.internal.html.wrapper;
+package jacoco.report.internal.html.highlighter;
 
 import org.jacoco.core.analysis.ICoverageNode;
 
@@ -11,13 +11,17 @@ public class NodeHighlightResults {
     Hashtable<ICoverageNode.CounterEntity, Boolean> entity_total_results;
     Hashtable<ICoverageNode.CounterEntity, Boolean> entity_body_results;
 
-    public NodeHighlightResults() {
+    public NodeHighlightResults(boolean init) {
         entity_body_results = new Hashtable<ICoverageNode.CounterEntity, Boolean>();
         entity_total_results = new Hashtable<ICoverageNode.CounterEntity, Boolean>();
         for (ICoverageNode.CounterEntity ce : ICoverageNode.CounterEntity.values()) {
-            entity_body_results.put(ce, true);
-            entity_total_results.put(ce, true);
+            entity_body_results.put(ce, init);
+            entity_total_results.put(ce, init);
         }
+    }
+
+    public NodeHighlightResults() {
+        this(true);
     }
 
     public void mergeBodyResults(NodeHighlightResults nhr) {
@@ -32,7 +36,7 @@ public class NodeHighlightResults {
         }
     }
 
-    void mergeTotaltoBody() {
+    public void mergeTotaltoBody() {
         for (ICoverageNode.CounterEntity ce : entity_body_results.keySet()) {
             entity_body_results.put(ce, entity_body_results.get(ce) && entity_total_results.get(ce));
         }

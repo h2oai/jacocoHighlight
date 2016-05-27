@@ -12,10 +12,15 @@
 package jacoco.report.html;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import jacoco.core.internal.analysis.CoverageNodeHighlight;
+import jacoco.report.internal.html.highlighter.NodeHighlighter;
+import jacoco.report.internal.html.parse.NewParseItem;
+import org.jacoco.core.analysis.ICoverageNode;
 import org.jacoco.report.html.HTMLFormatter;
 import jacoco.report.internal.html.resources.HighlightResources;
 import jacoco.report.internal.html.table.HighlightTable;
@@ -54,6 +59,17 @@ public class HighlightHTMLFormatter extends HTMLFormatter {
     private SessionsPage sessionsPage;
 
     private HighlightTable table;
+
+    private Collection<NewParseItem> params;
+
+    public HighlightHTMLFormatter(Collection<NewParseItem> params) {
+        super();
+        this.params = params;
+    }
+
+    public HighlightHTMLFormatter() {
+        this(new ArrayList<NewParseItem>(0));
+    }
 
     /**
      * Sets the locale used for report rendering. The current default locale is
@@ -155,19 +171,20 @@ public class HighlightHTMLFormatter extends HTMLFormatter {
 
             public void visitBundle(final IBundleCoverage bundle,
                                     final ISourceFileLocator locator) throws IOException {
+                CoverageNodeHighlight parent = new CoverageNodeHighlight(ICoverageNode.ElementType.GROUP, null);
+                parent.addChild(bundle);
+                NodeHighlighter.apply(parent, params);
                 final BundlePage page = new BundlePage(bundle, null, locator,
                         root, HighlightHTMLFormatter.this);
                 createSessionsPage(page);
                 page.render();
             }
 
-            public IReportGroupVisitor visitGroup(final String name)
-                    throws IOException {
+            public IReportGroupVisitor visitGroup(final String name) throws IOException {
                 groupHandler = new HighlightHTMLGroupVisitor(null, root,
-                        HighlightHTMLFormatter.this, name);
+                        HighlightHTMLFormatter.this, name, params);
                 createSessionsPage(groupHandler.getPage());
                 return groupHandler;
-
             }
 
             private void createSessionsPage(final ReportPage rootpage) {

@@ -17,4 +17,9 @@ public class PackageItem extends NewParseItem {
     public boolean matches(ICoverageNode name) {
         return name.getElementType() == ICoverageNode.ElementType.PACKAGE && isDefined() && package_name.matches(name.getName());
     }
+
+    @Override
+    public itemType getType() {
+        return itemType.PACKAGE;
+    }
 }

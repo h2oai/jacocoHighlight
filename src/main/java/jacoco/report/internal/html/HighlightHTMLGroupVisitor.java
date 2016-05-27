@@ -12,8 +12,11 @@
 package jacoco.report.internal.html;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import jacoco.report.internal.AbstractHighlightGroupVisitor;
+import jacoco.report.internal.html.parse.NewParseItem;
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.analysis.ICoverageNode;
 import org.jacoco.report.ISourceFileLocator;
@@ -50,11 +53,17 @@ public class HighlightHTMLGroupVisitor extends AbstractHighlightGroupVisitor {
      */
     public HighlightHTMLGroupVisitor(final ReportPage parent,
                                      final ReportOutputFolder folder, final IHTMLReportContext context,
-                                     final String name) {
-        super(name);
+                                     final String name, Collection<NewParseItem> pil) {
+        super(name, pil);
         this.folder = folder;
         this.context = context;
         page = new GroupPage(total, parent, folder, context);
+    }
+
+    public HighlightHTMLGroupVisitor(final ReportPage parent,
+                                     final ReportOutputFolder folder, final IHTMLReportContext context,
+                                     final String name) {
+        this(parent, folder, context, name, new ArrayList<NewParseItem>(0));
     }
 
     /**
@@ -79,7 +88,7 @@ public class HighlightHTMLGroupVisitor extends AbstractHighlightGroupVisitor {
     protected AbstractHighlightGroupVisitor handleGroup(final String name)
             throws IOException {
         final HighlightHTMLGroupVisitor handler = new HighlightHTMLGroupVisitor(page,
-                folder.subFolder(name), context, name);
+                folder.subFolder(name), context, name, child_parse_items);
         page.addItem(handler.getPage());
         return handler;
     }

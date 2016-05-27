@@ -22,4 +22,9 @@ public class MethodItem extends NewParseItem {
         }
         return false;
     }
+
+    @Override
+    public itemType getType() {
+        return itemType.METHOD;
+    }
 }

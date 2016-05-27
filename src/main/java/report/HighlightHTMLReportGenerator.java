@@ -7,6 +7,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import jacoco.report.html.HighlightHTMLFormatter;
+import jacoco.report.internal.html.parse.NewYAMLParser;
+import jacoco.report.internal.html.parse.YAMLParser;
 import jacoco.report.internal.html.wrapper.CoverageWrapper;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
@@ -65,8 +67,8 @@ public class HighlightHTMLReportGenerator {
         // class folder and each jar you want in your report. If you have
         // more than one bundle you will need to add a grouping node to your
         // report
-        final IBundleCoverage bundleCoverage = analyzeStructure();
-        createReport(bundleCoverage);
+        //final IBundleCoverage bundleCoverage = analyzeStructure();
+        createReport(null);
 
     }
 
@@ -75,7 +77,8 @@ public class HighlightHTMLReportGenerator {
 
         // Create a concrete report visitor based on some supplied
         // configuration. In this case we use the defaults
-        final HTMLFormatter htmlFormatter = new HighlightHTMLFormatter();
+        NewYAMLParser param_parser = new NewYAMLParser(System.out, System.err);
+        final HTMLFormatter htmlFormatter = new HighlightHTMLFormatter(param_parser.parse(parseParamDirectory));
         final IReportVisitor visitor = htmlFormatter
                 .createVisitor(new FileMultiReportOutput(reportDirectory));
 
@@ -85,17 +88,33 @@ public class HighlightHTMLReportGenerator {
         visitor.visitInfo(execFileLoader.getSessionInfoStore().getInfos(),
                 execFileLoader.getExecutionDataStore().getContents());
 
+        // TEST
+        CoverageBuilder coverageBuilder = new CoverageBuilder();
+        Analyzer analyzer = new Analyzer(
+                execFileLoader.getExecutionDataStore(), coverageBuilder);
+
+        analyzer.analyzeAll(new File("/Users/nkalonia1/h2o-3/h2o-core/build/classes"));
+        IBundleCoverage core_bundle = coverageBuilder.getBundle("h2o-core");
+
+        coverageBuilder = new CoverageBuilder();
+        analyzer = new Analyzer(
+                execFileLoader.getExecutionDataStore(), coverageBuilder);
+
+        analyzer.analyzeAll(new File("/Users/nkalonia1/h2o-3/h2o-algos/build/classes"));
+        IBundleCoverage algos_bundle = coverageBuilder.getBundle("h2o-algos");
+        //
+
         // Populate the report structure with the bundle coverage information.
         // Call visitGroup if you need groups in your report.
-        IBundleCoverage b = CoverageWrapper.parseBundle(CoverageWrapper.wrapBundle(bundleCoverage), parseParamDirectory);
         MultiSourceFileLocator src_dir = new MultiSourceFileLocator(4);
         for(File dir : sourceDirectories) {
             src_dir.add(new DirectorySourceFileLocator(
                     dir, "utf-8", 4));
         }
-        //IReportGroupVisitor g = visitor.visitGroup("h2o-core");
-        //g.visitBundle(b, src_dir);
-        visitor.visitBundle(b, src_dir);
+        IReportGroupVisitor g = visitor.visitGroup("h2o-3");
+        g.visitBundle(CoverageWrapper.wrapBundle(core_bundle), src_dir);
+        g.visitBundle(CoverageWrapper.wrapBundle(algos_bundle), src_dir);
+        //visitor.visitBundle(b, src_dir);
         // Signal end of structure information to allow report to write all
         // information out
         visitor.visitEnd();
@@ -143,8 +162,11 @@ public class HighlightHTMLReportGenerator {
                     break;
                 case "-e":
                     if (++i >= args.length) usage();
+                    System.out.println(args[i]);
                     PathMatcher epm = FileSystems.getDefault().getPathMatcher("glob:" + args[i]);
                     findFiles(root, epm, params.executionDataFiles);
+                    System.out.println(root);
+                    System.out.println(params.executionDataFiles);
                     break;
                 case "-t":
                     if (++i >= args.length) usage();

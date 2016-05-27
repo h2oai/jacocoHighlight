@@ -22,4 +22,9 @@ public class ClassItem extends NewParseItem {
         }
         return false;
     }
+
+    @Override
+    public itemType getType() {
+        return itemType.CLASS;
+    }
 }

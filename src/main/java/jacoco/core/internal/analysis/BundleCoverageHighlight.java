@@ -1,7 +1,8 @@
 package jacoco.core.internal.analysis;
 
 import jacoco.core.analysis.IHighlightNode;
-import jacoco.report.internal.html.wrapper.NodeHighlightResults;
+import jacoco.core.analysis.ITreeNode;
+import jacoco.report.internal.html.highlighter.NodeHighlightResults;
 import org.jacoco.core.analysis.ICoverageNode;
 import org.jacoco.core.internal.analysis.BundleCoverageImpl;
 import org.jacoco.core.analysis.IPackageCoverage;
@@ -13,7 +14,7 @@ import java.util.Collection;
 /**
  * Created by nkalonia1 on 3/17/16.
  */
-public class BundleCoverageHighlight extends BundleCoverageImpl implements IHighlightNode {
+public class BundleCoverageHighlight extends BundleCoverageImpl implements IHighlightNode, ITreeNode {
     NodeHighlightResults _nhr;
     public BundleCoverageHighlight(final String name,
                                    final Collection<IPackageCoverage> packages) {
@@ -37,5 +38,10 @@ public class BundleCoverageHighlight extends BundleCoverageImpl implements IHigh
         copy.methodCounter = CounterImpl.getInstance(methodCounter);
         copy.classCounter = CounterImpl.getInstance(classCounter);
         return copy;
+    }
+
+    @Override
+    public Collection<IPackageCoverage> getChildren() {
+        return getPackages();
     }
 }

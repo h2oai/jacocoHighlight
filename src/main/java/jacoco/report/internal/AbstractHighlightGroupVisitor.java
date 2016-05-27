@@ -12,10 +12,14 @@
 package jacoco.report.internal;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+import jacoco.report.internal.html.highlighter.NodeHighlighter;
+import jacoco.report.internal.html.parse.NewParseItem;
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.analysis.ICoverageNode.ElementType;
-import jacoco.core.analysis.IHighlightNode;
 import jacoco.core.internal.analysis.CoverageNodeHighlight;
 import org.jacoco.report.IReportGroupVisitor;
 import org.jacoco.report.ISourceFileLocator;
@@ -28,6 +32,8 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
 
     /** coverage node for this group to total counters */
     protected final CoverageNodeHighlight total;
+    protected final List<NewParseItem> child_parse_items;
+    private final Collection<NewParseItem> parse_items;
 
     private AbstractHighlightGroupVisitor lastChild;
 
@@ -37,16 +43,30 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
      * @param name
      *            name for the coverage node created internally
      */
-    protected AbstractHighlightGroupVisitor(final String name) {
+    protected AbstractHighlightGroupVisitor(final String name, Collection<NewParseItem> pil) {
         total = new CoverageNodeHighlight(ElementType.GROUP, name);
+        parse_items = pil;
+        child_parse_items = new ArrayList<NewParseItem>();
+        for (NewParseItem pi : pil) {
+            if (pi.matches(total) && !pi.isLeaf()) {
+                for (NewParseItem child : pi.getChildren()) {
+                    child_parse_items.add(child);
+                }
+            }
+        }
+        System.out.println(child_parse_items);
+    }
+
+    protected AbstractHighlightGroupVisitor(final String name) {
+        this(name, new ArrayList<NewParseItem>(0));
     }
 
     public final void visitBundle(final IBundleCoverage bundle,
                                   final ISourceFileLocator locator) throws IOException {
         finalizeLastChild();
         total.increment(bundle);
-        if (bundle instanceof IHighlightNode)
-            total.getHighlightResults().mergeBodyResults(((IHighlightNode) bundle).getHighlightResults());
+        total.addChild(bundle);
+        NodeHighlighter.apply(bundle, child_parse_items);
         handleBundle(bundle, locator);
     }
 
@@ -67,6 +87,7 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
             throws IOException {
         finalizeLastChild();
         lastChild = handleGroup(name);
+        total.addChild(lastChild.total);
         return lastChild;
     }
 
@@ -90,6 +111,7 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
      */
     public final void visitEnd() throws IOException {
         finalizeLastChild();
+        NodeHighlighter.apply(total, parse_items, ElementType.GROUP);
         handleEnd();
     }
 
@@ -105,7 +127,6 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
         if (lastChild != null) {
             lastChild.visitEnd();
             total.increment(lastChild.total);
-            total.getHighlightResults().mergeBodyResults(lastChild.total.getHighlightResults());
             lastChild = null;
         }
     }

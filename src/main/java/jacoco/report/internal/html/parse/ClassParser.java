@@ -30,15 +30,14 @@ public class ClassParser extends RootParser {
 
             log("Parsing properties...");
             Object val;
-            List l = (List) m.get(key);
+            m = (Map) m.get(key);
 
-            NewParseItem pi = parseRequired((Map) l.get(0));
+            NewParseItem pi = parseRequired(m);
             if (!pi.isValid()) return new InvalidParseItem();
             parseValues(m, pi);
             parsePropagate(m, pi);
 
-            Iterator i = l.iterator();
-            i.next();
+            Iterator i = getChildIterator(m);
             log("Parsing children...");
             MethodParser mp = new MethodParser(yaml);
             while (i.hasNext()) {

@@ -17,4 +17,9 @@ public class GroupItem extends NewParseItem {
     public boolean matches(ICoverageNode name) {
         return name.getElementType() == ICoverageNode.ElementType.GROUP && isDefined() && group_name.matches(name.getName());
     }
+
+    @Override
+    public itemType getType() {
+        return itemType.GROUP;
+    }
 }

@@ -24,9 +24,9 @@ public class MethodParser extends RootParser {
             if (!verify(m)) return new InvalidParseItem();
 
             log("Parsing properties...");
-            List l = (List) m.get(key);
+            m = (Map) m.get(key);
 
-            NewParseItem pi = parseRequired((Map) l.get(0));
+            NewParseItem pi = parseRequired(m);
             if (!pi.isValid()) return new InvalidParseItem();
             parseValues(m, pi);
             parsePropagate(m, pi);

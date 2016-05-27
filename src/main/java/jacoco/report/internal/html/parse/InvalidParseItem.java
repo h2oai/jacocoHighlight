@@ -34,4 +34,9 @@ public class InvalidParseItem extends NewParseItem{
 
     @Override
     public boolean isValid() { return false; }
+
+    @Override
+    public itemType getType() {
+        return itemType.INVALID;
+    }
 }
