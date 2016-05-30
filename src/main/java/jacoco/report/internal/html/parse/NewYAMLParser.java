@@ -75,7 +75,6 @@ public class NewYAMLParser {
                             continue;
                         }
                         log("Starting block...");
-                        resetValues();
                         RootParser rp = new RootParser(this);
                         NewParseItem pi = rp.parse((Map) i);
                         if(pi.isValid()) _items.add(pi);
@@ -126,6 +125,16 @@ public class NewYAMLParser {
                 System.err.println(ioe);
             }
         }
+    }
+
+    public void closeStreams() throws IOException {
+        if (_out != null) {
+            _out.close();
+        }
+        if (_err != null) {
+            _err.close();
+        }
+        _log_out = _log_err = false;
     }
 
     public Collection<CounterEntity> getHeaders() { return _default_headers; }

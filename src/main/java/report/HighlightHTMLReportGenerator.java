@@ -112,8 +112,9 @@ public class HighlightHTMLReportGenerator {
                     dir, "utf-8", 4));
         }
         IReportGroupVisitor g = visitor.visitGroup("h2o-3");
-        g.visitBundle(CoverageWrapper.wrapBundle(core_bundle), src_dir);
-        g.visitBundle(CoverageWrapper.wrapBundle(algos_bundle), src_dir);
+        //g.visitBundle(CoverageWrapper.wrapBundle(core_bundle), src_dir);
+        visitor.visitBundle(CoverageWrapper.wrapBundle(algos_bundle), src_dir);
+        visitor.visitBundle(CoverageWrapper.wrapBundle(core_bundle), src_dir);
         //visitor.visitBundle(b, src_dir);
         // Signal end of structure information to allow report to write all
         // information out
