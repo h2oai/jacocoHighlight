@@ -2,6 +2,7 @@ package report;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -11,14 +12,21 @@ import java.util.Collection;
 public class ArgParams {
     String title;
     Path root;
-    Collection<File> execs;
+    ExecutionData execs;
     Collection<File> sources;
+
+    public ArgParams() {
+        title = "";
+        root = Paths.get(System.getProperty("user.dir"));
+        execs = new ExecutionData(new ArrayList<File>(0));
+        sources = new ArrayList<File>(0);
+    }
 
     public ArgParams shallowCopy() {
         ArgParams copy = new ArgParams();
         copy.title = title;
         copy.root = root;
-        copy.execs = execs;
+        copy.execs = execs.shallowCopy();
         copy.sources = sources;
         return copy;
     }
@@ -27,7 +35,7 @@ public class ArgParams {
         ArgParams copy = new ArgParams();
         copy.title = title;
         copy.root = root;
-        copy.execs = new ArrayList<File>(execs);
+        copy.execs = execs.deepCopy();
         copy.sources = new ArrayList<File>(sources);
         return copy;
     }

@@ -14,15 +14,15 @@ public class ArgHandler {
     private Logger _l;
 
     public ArgHandler(Logger l) {
-        this._l = l;
+        this(l, new ArgParams());
     }
 
     public ArgHandler(Logger l, ArgParams params) {
-        this(l);
+        this._l = l;
         _params = params.shallowCopy();
     }
 
-    private ArgItem handleArgs(Map m) {
+    public ArgItem handleArgs(Map m) {
         Object val;
         ArgItem ai = new InvalidArgItem();
         if ((val = m.get("root")) != null) {
@@ -36,7 +36,7 @@ public class ArgHandler {
         }
         if ((val = m.get("exec")) != null) {
             log("Found 'exec'");
-            _params.execs = addFiles(val, new ArrayList<File>(), _params.root);
+            _params.execs = new ExecutionData(addFiles(val, new ArrayList<File>(), _params.root));
         }
         if ((val = m.get("src")) != null) {
             log("Found 'src'");

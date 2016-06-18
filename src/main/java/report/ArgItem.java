@@ -1,5 +1,9 @@
 package report;
 
+import org.jacoco.report.IReportGroupVisitor;
+import org.jacoco.report.IReportVisitor;
+
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -15,4 +19,8 @@ public abstract class ArgItem<T> {
     public Type getType() { return Type.INVALID; }
 
     public abstract void addClass(Collection<T> l);
+
+    public abstract ExecutionData getAllExecs();
+
+    public abstract void analyze(IReportGroupVisitor visitor) throws IOException;
 }
