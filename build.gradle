@@ -37,7 +37,7 @@ shadowJar {
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.SF'
     manifest {
-        attributes 'Main-Class': 'report.HighlightHTMLReportGenerator'
+        attributes 'Main-Class': 'report.NewHighlightHTMLReportGenerator'
     }
 }
 

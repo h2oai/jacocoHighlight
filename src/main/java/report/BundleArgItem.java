@@ -6,7 +6,6 @@ import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.report.DirectorySourceFileLocator;
 import org.jacoco.report.IReportGroupVisitor;
-import org.jacoco.report.IReportVisitor;
 import org.jacoco.report.MultiSourceFileLocator;
 
 import java.io.File;
@@ -32,10 +31,7 @@ public class BundleArgItem extends ArgItem<File> {
 
     @Override
     public void addClass(Collection<File> l) {
-        _classes = new ArrayList<File>(l.size());
-        for (File f : l) {
-            _classes.add(f);
-        }
+        _classes = new ArrayList<File>(l);
     }
 
     @Override

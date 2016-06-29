@@ -58,12 +58,14 @@ public class ArgHandler {
         if ((val = m.get("class")) != null) {
             log("found 'class'");
             if (val instanceof String || val instanceof Map) {
-                val = (new ArrayList<Object>(1)).add(val);
+                List<Object> new_val = (new ArrayList<Object>(1));
+                new_val.add(val);
+                val = new_val;
             }
             if (val instanceof List) {
                 List l = (List) val;
                 if (l.size() > 0) {
-                    Object item = l.get(1);
+                    Object item = l.get(0);
                     if (item instanceof Map) {
                         ai = createGroupArgItem(l);
                     } else if (item instanceof String) {
@@ -82,6 +84,7 @@ public class ArgHandler {
     }
 
     private ArgItem createGroupArgItem(List l) {
+        log("Creating Group...");
         GroupArgItem gai = new GroupArgItem(_params);
         Collection<ArgItem> argItems = new ArrayList<ArgItem>();
         for (Object item : l) {
@@ -97,6 +100,7 @@ public class ArgHandler {
     }
 
     private ArgItem createBundleArgItem(List l) {
+        log("Creating Bundle...");
         BundleArgItem bai = new BundleArgItem(_params);
         bai.addClass(addFiles(l, new ArrayList<File>(), _params.root));
         return bai;
@@ -105,7 +109,7 @@ public class ArgHandler {
     private Collection<File> addFiles(Object o, Collection<File> l, Path root) {
         if (o instanceof String) {
             log("Found String");
-            PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + o);
+            PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + root.resolve((String) o));
             findFiles(root, pm, l);
         } else if (o instanceof List) {
             log("Beginning List...");
@@ -133,7 +137,7 @@ public class ArgHandler {
             @Override
             public FileVisitResult preVisitDirectory(Path dir,
                                                      BasicFileAttributes attrs) {
-                if (dir != null && pm.matches(dir)) {
+                 if (dir != null && pm.matches(dir)) {
                     files.add(dir.toFile());
                 }
                 return FileVisitResult.CONTINUE;

@@ -87,4 +87,10 @@ public class NewHighlightHTMLReportGenerator {
     public void closeStreams() throws IOException {
         out.close();
     }
+
+    public static void main(String[] args) throws IOException {
+        NewHighlightHTMLReportGenerator r =new NewHighlightHTMLReportGenerator(new Logger(System.out, System.err));
+        System.out.println(args[0]);
+        r.parseArgs(new File(args[0]));
+    }
 }

@@ -33,10 +33,7 @@ public class GroupArgItem extends ArgItem<ArgItem> {
 
     @Override
     public void addClass(Collection<ArgItem> l) {
-        _children = new ArrayList<ArgItem>(l.size());
-        for(ArgItem ai : l) {
-            _children.add(ai);
-        }
+        _children = new ArrayList<ArgItem>(l);
     }
 
     @Override
