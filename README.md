@@ -265,7 +265,7 @@ class  :
 
 ## Configuration File
 
-The parameter file specifies the passing coverage criteria for each item in the report. The file should be written according to the [YAML Version 1.1 specs](http://yaml.org/spec/1.1/ "YAML 1.1 Specs"), where the criteria for each item is in its own separate document. The values defined for some scalars in a document are carried over to the next one (the exact list is specified below).
+The configuration file specifies the passing coverage criteria for each item in the report. Like the parameter file, the configuration file is written as a tree structure of Lists and Maps written in accordance to the [YAML Version 1.1 specs](http://yaml.org/spec/1.1/ "YAML 1.1 Specs").  
 
 Each document can accept the following scalars:
 
