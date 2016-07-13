@@ -19,9 +19,6 @@ public class NewYAMLParser {
     private OutputStreamWriter _out;
     private OutputStreamWriter _err;
 
-    private PackageName _package_name;
-    private ClassName _class_name;
-    private MethodName _method_name;
     private boolean _propagate;
     private static final NameString _wild_name = new NameString("*");
     private static final NameList _wild_list = new NameList(new NameString[] {_wild_name}, true);
@@ -94,11 +91,6 @@ public class NewYAMLParser {
     }
 
     private void resetValues() {
-        _package_name = new PackageName();
-        _class_name = new ClassName();
-        _method_name = new MethodName();
-        _propagate = false;
-        _current_values.clear();
         _items = new ArrayList<NewParseItem>();
         for (CounterEntity ce : _default_headers) {
             _default_values.put(ce, 0.0);

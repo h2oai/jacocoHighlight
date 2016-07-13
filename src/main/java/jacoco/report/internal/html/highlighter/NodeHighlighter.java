@@ -14,24 +14,22 @@ import java.util.Collection;
 public class NodeHighlighter {
 
     public static ICoverageNode apply(ICoverageNode n, Collection<NewParseItem> pil) {
-        return apply(n, pil, null);
+        return apply(n, pil, true);
     }
 
-    public static ICoverageNode apply(ICoverageNode n, Collection<NewParseItem> pil, ICoverageNode.ElementType filter) {
-        highlightTotal(n, pil, filter);
+    public static ICoverageNode apply(ICoverageNode n, Collection<NewParseItem> pil, boolean tree) {
+        highlightTotal(n, pil, tree);
         highlightDisplay(n);
         return n;
     }
 
-    private static NodeHighlightResults highlightTotal(ICoverageNode n, Collection<NewParseItem> pil, ICoverageNode.ElementType filter) {
+    private static NodeHighlightResults highlightTotal(ICoverageNode n, Collection<NewParseItem> pil, boolean tree) {
         for (NewParseItem pi : pil) {
-            if (filter != null && n.getElementType() != filter)
-                continue;
             if (pi.matches(n)) {
                 highlightNode(n, pi);
-                if (!pi.isLeaf()) {
+                if (!pi.isLeaf() && tree) {
                     for (ICoverageNode child : getChildren(n)) {
-                        highlightTotal(child, pi.getChildren(), filter);
+                        highlightTotal(child, pi.getChildren(), tree);
                     }
                 }
             }
@@ -49,19 +47,23 @@ public class NodeHighlighter {
         return nhr;
     }
 
-    private static void highlightNode(ICoverageNode n, NewParseItem pi) {
-        if (!(n instanceof IHighlightNode) || !pi.hasValues()) {
+    private static void highlightNode(ICoverageNode n, NewParseItem pi, boolean apply_propagate) {
+        if (!(n instanceof IHighlightNode)) {
             return;
         }
         NodeHighlightResults nhr = ((IHighlightNode) n).getHighlightResults();
-        for (ICoverageNode.CounterEntity ce : pi.getHeaders()) {
+        for (ICoverageNode.CounterEntity ce : ICoverageNode.CounterEntity.values()) {
             nhr.entity_total_results.put(ce, !(n.getCounter(ce).getCoveredRatio() < (pi.getValue(ce) / 100.0)));
         }
-        if (pi.propagate()) {
+        if (apply_propagate && pi.propagate()) {
             for (ICoverageNode child : getChildren(n)) {
                 highlightNode(child, pi);
             }
         }
+    }
+
+    private static void highlightNode(ICoverageNode n, NewParseItem pi) {
+        highlightNode(n, pi, true);
     }
 
     private static Collection<? extends ICoverageNode> getChildren(ICoverageNode n) {

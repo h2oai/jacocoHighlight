@@ -1,5 +1,4 @@
 import diff.*;
-import report.HighlightHTMLReportGenerator;
 import parse.*;
 
 import java.io.File;

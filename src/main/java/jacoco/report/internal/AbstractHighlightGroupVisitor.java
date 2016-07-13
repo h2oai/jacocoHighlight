@@ -28,7 +28,7 @@ import org.jacoco.report.ISourceFileLocator;
  * Internal base visitor to calculate group counter summaries for hierarchical
  * reports.
  */
-public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisitor {
+public abstract class  AbstractHighlightGroupVisitor implements IReportGroupVisitor {
 
     /** coverage node for this group to total counters */
     protected final CoverageNodeHighlight total;
@@ -45,16 +45,24 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
      */
     protected AbstractHighlightGroupVisitor(final String name, Collection<NewParseItem> pil) {
         total = new CoverageNodeHighlight(ElementType.GROUP, name);
-        parse_items = pil;
+        parse_items = new ArrayList<NewParseItem>();
         child_parse_items = new ArrayList<NewParseItem>();
-        for (NewParseItem pi : pil) {
-            if (pi.matches(total) && !pi.isLeaf()) {
-                for (NewParseItem child : pi.getChildren()) {
+        // Filter out ParseItems that don't apply to this group
+        for (NewParseItem p : pil) {
+            if (p.matches(total)) {
+                parse_items.add(p);
+                // While we're at it, also create the list of children of these ParseItems.
+                // If propagate is true for a ParseItem, then first add a clone of it before adding any other children.
+                if (p.propagate()) {
+                    NewParseItem prop = new NewParseItem(NewParseItem.itemType.ANY);
+                    prop.setParent(p);
+                    child_parse_items.add(prop);
+                }
+                for (NewParseItem child : p.getChildren()) {
                     child_parse_items.add(child);
                 }
             }
         }
-        System.out.println(child_parse_items);
     }
 
     protected AbstractHighlightGroupVisitor(final String name) {
@@ -111,7 +119,7 @@ public abstract class AbstractHighlightGroupVisitor implements IReportGroupVisit
      */
     public final void visitEnd() throws IOException {
         finalizeLastChild();
-        NodeHighlighter.apply(total, parse_items, ElementType.GROUP);
+        NodeHighlighter.apply(total, parse_items, false);
         handleEnd();
     }
 

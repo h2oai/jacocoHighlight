@@ -19,7 +19,7 @@ public class RootParser {
 
     public RootParser(final NewYAMLParser yaml) {
         this.yaml = yaml;
-        key = "group";
+        key = "item";
     }
 
     public NewParseItem parse(Map m) {
@@ -36,10 +36,11 @@ public class RootParser {
             if (!pi.isValid()) return new InvalidParseItem();
             parseValues(m, pi);
             parsePropagate(m, pi);
+            parseType(m, pi);
 
             Iterator i = getChildIterator(m);
             log("Parsing children...");
-            GroupParser g = new GroupParser(yaml);
+            RootParser g = new RootParser(yaml);
             while(i.hasNext()) {
                 if ((val = i.next()) instanceof Map) {
                     NewParseItem c = g.parse((Map) val);
@@ -54,11 +55,8 @@ public class RootParser {
             }
             return pi;
         } else {
-            NewParseItem child = (new BundleParser(yaml)).parse(m);
-            if (!child.isValid()) return new InvalidParseItem();
-            NewParseItem pi = createWildItem();
-            pi.children.add(child);
-            return pi;
+            err("No key found named \"" + key + "\". Skipping...");
+            return new InvalidParseItem();
         }
     }
 
@@ -75,7 +73,6 @@ public class RootParser {
         Object val;
         NewParseItem p;
         if ((val = m.get("name")) != null) {
-            log("Found \"name\"");
             if (val instanceof Map) {
                 p = createItem((Map) val);
             } else if (val instanceof String) {
@@ -92,15 +89,18 @@ public class RootParser {
     }
 
     protected NewParseItem createItem(Map m) {
-        NameString name;
-        GroupItem gi = new GroupItem();
-        if (m.containsKey("name") && m.get("name") instanceof String) {
-            String string_name = (String) m.get("name");
-            log("Found name: " + string_name);
-            name = new NameString(string_name);
-            gi.group_name = new GroupName(name);
+        AntName name = new AntName();
+        NewParseItem pi = new NewParseItem();
+        for (Name.String_Field s : Name.String_Field.values()) {
+            String n = s.toString().toLowerCase();
+            if (m.containsKey(n) && m.get(n) instanceof String) {
+                String string_name = (String) m.get("name");
+                log("Found '" + n + "': " + string_name);
+                name.put(new NameString(string_name), s);
+            }
         }
-        return gi;
+        pi.setName(name);
+        return pi;
     }
 
     protected NewParseItem createItem(String s) {
@@ -124,6 +124,24 @@ public class RootParser {
             } else {
                 err("Invalid value for \"values\"");
             }
+        }
+        return p;
+    }
+
+    protected NewParseItem parseType(Map m, NewParseItem p) {
+        Object val;
+        if ((val = m.get("type")) != null) {
+            log("Found \"type\"");
+            if (val instanceof String) {
+                for (NewParseItem.itemType type : NewParseItem.itemType.values()) {
+                    if (type.toString().toLowerCase().equals(((String) val).toLowerCase())) {
+                        p.type = type;
+                        return p;
+                    }
+                }
+                err("Invalid value for \"type\": " + val);
+            }
+            err("Invalid value for \"type\": " + val);
         }
         return p;
     }
@@ -153,7 +171,7 @@ public class RootParser {
         if ((val = m.get("propagate")) != null) {
             log("Found \"propagate\"");
             if (val instanceof Boolean) {
-                p.propagate = (boolean) val;
+                p.setPropagate((boolean) val);
             } else {
                 err("Invalid value for \"propagate\": " + val);
             }

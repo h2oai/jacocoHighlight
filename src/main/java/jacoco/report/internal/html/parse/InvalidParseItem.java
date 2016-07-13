@@ -6,22 +6,20 @@ import java.util.Collection;
 /**
  * Created by nkalonia1 on 3/27/16.
  */
-public class InvalidParseItem extends NewParseItem{
+public class InvalidParseItem extends NewParseItem {
+
+    public InvalidParseItem() {
+        type = itemType.INVALID;
+    }
 
     @Override
     public boolean matches(ICoverageNode name) { throw new IllegalStateException("ParseItem is invalid"); }
 
     @Override
-    public boolean isDefined() { throw new IllegalStateException("ParseItem is invalid"); }
-
-    @Override
     public boolean propagate() { throw new IllegalStateException("ParseItem is invalid"); }
 
     @Override
-    public boolean hasValues() { throw new IllegalStateException("ParseItem is invalid"); }
-
-    @Override
-    public Collection<ICoverageNode.CounterEntity> getHeaders() { throw new IllegalStateException("ParseItem is invalid"); }
+    public boolean hasValue(ICoverageNode.CounterEntity ce) { throw new IllegalStateException("ParseItem is invalid"); }
 
     @Override
     public double getValue(ICoverageNode.CounterEntity ce) { throw new IllegalStateException("ParseItem is invalid"); }
@@ -33,10 +31,19 @@ public class InvalidParseItem extends NewParseItem{
     public boolean isLeaf() { throw new IllegalStateException("ParseItem is invalid"); }
 
     @Override
+    public boolean isRoot() { throw new IllegalStateException("ParseItem is invalid"); }
+
+    @Override
     public boolean isValid() { return false; }
 
     @Override
-    public itemType getType() {
-        return itemType.INVALID;
+    boolean matchesType(ICoverageNode.ElementType et) { return false; }
+
+    @Override
+    boolean setPropagate(boolean propagate) { throw new IllegalStateException("ParseItem is invalid"); }
+
+    @Override
+    void setName(Name n) {
+        throw new IllegalStateException("ParseItem is invalid");
     }
 }
