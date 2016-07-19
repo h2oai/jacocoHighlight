@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 import jacoco.report.internal.html.highlighter.NodeHighlighter;
+import jacoco.report.internal.html.parse.NewGlobalParseItem;
 import jacoco.report.internal.html.parse.NewParseItem;
 import org.jacoco.core.analysis.IBundleCoverage;
 import org.jacoco.core.analysis.ICoverageNode.ElementType;
@@ -54,7 +55,7 @@ public abstract class  AbstractHighlightGroupVisitor implements IReportGroupVisi
                 // While we're at it, also create the list of children of these ParseItems.
                 // If propagate is true for a ParseItem, then first add a clone of it before adding any other children.
                 if (p.propagate()) {
-                    NewParseItem prop = new NewParseItem(NewParseItem.itemType.ANY);
+                    NewParseItem prop = new NewGlobalParseItem();
                     prop.setParent(p);
                     child_parse_items.add(prop);
                 }
@@ -91,7 +92,7 @@ public abstract class  AbstractHighlightGroupVisitor implements IReportGroupVisi
     protected abstract void handleBundle(IBundleCoverage bundle,
                                          ISourceFileLocator locator) throws IOException;
 
-    public final IReportGroupVisitor visitGroup(final String name)
+    public final IReportGroupVisitor  visitGroup(final String name)
             throws IOException {
         finalizeLastChild();
         lastChild = handleGroup(name);

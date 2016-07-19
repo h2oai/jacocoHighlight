@@ -171,7 +171,7 @@ public class RootParser {
         if ((val = m.get("propagate")) != null) {
             log("Found \"propagate\"");
             if (val instanceof Boolean) {
-                p.setPropagate((boolean) val);
+                p.setPropagate((Boolean) val);
             } else {
                 err("Invalid value for \"propagate\": " + val);
             }

@@ -27,18 +27,22 @@ public class NewParseItem {
 
     public NewParseItem(itemType type) {
         this.type = type;
-        Name name = new InvalidAntName();
+        name = new InvalidName();
         children = new LinkedList<NewParseItem>();
         values = new HashMap<ICoverageNode.CounterEntity, Double>(6,1);
     }
 
-    public boolean matches(ICoverageNode n) { return name.matches(NameCreator.create(n)); }
+    public boolean matches(ICoverageNode n) { return getName().matches(NameCreator.create(n)); }
 
 //    public abstract boolean isDefined();
 
     public boolean propagate() {
         if (propagate_set) return propagate;
         return setPropagate(!isRoot() && parent.propagate());
+    }
+
+    public Name getName() {
+        return name;
     }
 
     public boolean hasValue(ICoverageNode.CounterEntity ce) { return values.containsKey(ce); }

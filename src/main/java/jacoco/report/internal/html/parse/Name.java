@@ -83,11 +83,18 @@ class StringName extends Name<String, String[]> {
 
 }
 
-class InvalidAntName extends AntName {
+class InvalidName extends Name<Object, Object> {
     @Override
     public boolean matches(StringName sn) {
         return false;
     }
+}
+
+class MatchingName extends Name<Object, Object> {
+    @Override
+    public boolean matches(StringName sn) {
+            return true;
+        }
 }
 
 class NameCreator {
