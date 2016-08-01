@@ -171,9 +171,7 @@ public class HighlightHTMLFormatter extends HTMLFormatter {
 
             public void visitBundle(final IBundleCoverage bundle,
                                     final ISourceFileLocator locator) throws IOException {
-                CoverageNodeHighlight parent = new CoverageNodeHighlight(ICoverageNode.ElementType.GROUP, null);
-                parent.addChild(bundle);
-                NodeHighlighter.apply(parent, params);
+                NodeHighlighter.apply(bundle, params);
                 final BundlePage page = new BundlePage(bundle, null, locator,
                         root, HighlightHTMLFormatter.this);
                 createSessionsPage(page);

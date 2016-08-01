@@ -159,7 +159,7 @@ Suppose we have the following file structure:
 └───proj_b
     ├───data.exec
     ├───src/main/java
-    ├───build/classes/main
+    └───build/classes/main
 ```
 We would like to create a merged coverage report for `proj_a` and `proj_b` while working from the location of `config.yml`. An implementation of the parameter file for this would then look like...
 
@@ -269,14 +269,12 @@ The configuration file specifies the passing coverage criteria for each item in 
 
 Each document can accept the following scalars:
 
-| Scalar                    | Description                                                       | Carried Over? |
-| ------------------------- | ----------------------------------------------------------------- | :-----------: |
-| [`package`](#package)     | Descriptors of the package, if any                                | Yes           |
-| [`class`](#class)         | Descriptors of the class, if any                                  | Yes           |
-| [`method`](#method)       | Descriptors of the method, if any                                 | Yes           |
-| [`values`](#values)       | Minimum criteria of the hit ratio for each coverage counter       | No            |
-| [`propagate`](#propagate) | Whether the criteria should also be applied to subclasses/methods | Yes           |
-| [`default`](#default)     | Default criteria of the hit ratio for each coverage counter       | Yes           |
+| Scalar                    | Description                         |
+| ------------------------- | ----------------------------------- |
+| [`item`](#item)           |                                  |
+| [`name`](#class)          | Name of the item |                                  |
+| [`values`](#values)       | Minimum criteria of the hit ratio for each coverage counter       |
+| [`propagate`](#propagate) | Whether the criteria should also be applied to children |
 
 ### `package`
 `package` defines the package(s) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
