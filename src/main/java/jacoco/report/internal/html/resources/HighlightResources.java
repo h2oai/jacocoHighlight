@@ -41,7 +41,6 @@ public class HighlightResources extends Resources {
     }
 
     private void copyResource(final String name) throws IOException {
-        System.out.println(name);
         final InputStream in = HighlightResources.class.getResourceAsStream(name);
         final OutputStream out = folder.createFile(name);
         final byte[] buffer = new byte[256];
