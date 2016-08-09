@@ -112,7 +112,7 @@ class NameCreator {
             String signature = ((IMethodCoverage) n).getSignature() == null ? "" : ((IMethodCoverage) n).getSignature();
             String description = ((IMethodCoverage) n).getDesc() == null ? "" : ((IMethodCoverage) n).getDesc();
             name.put(signature, Name.String_Field.SIGNATURE);
-            name.put(description, Name.String_Field.SUPERCLASS);
+            name.put(description, Name.String_Field.DESCRIPTION);
         }
         return name;
     }

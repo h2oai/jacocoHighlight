@@ -10,7 +10,6 @@ import java.util.*;
  */
 public class RootParser {
 
-    protected String key;
     protected final NewYAMLParser yaml;
 
     public RootParser() {
@@ -19,70 +18,50 @@ public class RootParser {
 
     public RootParser(final NewYAMLParser yaml) {
         this.yaml = yaml;
-        key = "item";
     }
 
     public NewParseItem parse(Map m) {
-        if (m.containsKey(key)) {
-            log("Found \"" + key + "\"");
-
-            if (!verify(m)) return new InvalidParseItem();
-
-            log("Parsing properties...");
-            Object val;
-            m = (Map) m.get(key);
-
-            NewParseItem pi = parseRequired(m);
-            if (!pi.isValid()) return new InvalidParseItem();
-            parseValues(m, pi);
-            parsePropagate(m, pi);
-            parseType(m, pi);
-
-            Iterator i = getChildIterator(m);
-            log("Parsing children...");
-            RootParser g = new RootParser(yaml);
-            while(i.hasNext()) {
-                if ((val = i.next()) instanceof Map) {
-                    NewParseItem c = g.parse((Map) val);
-                    if (!c.isValid()) {
-                        err("Invalid child. Skipping...");
-                        continue;
-                    }
-                    pi.children.add(c);
-                } else {
-                    err("Child expected to be a Map. Skipping...");
-                }
-            }
-            return pi;
-        } else {
-            err("No key found named \"" + key + "\". Skipping...");
-            return new InvalidParseItem();
-        }
-    }
-
-    protected boolean verify(Map m) {
+        log("Parsing properties...");
         Object val;
-        if (!((val = m.get(key)) instanceof Map)) {
-            err("\"" + key + "\" should map to a Map");
-            return false;
+
+        NewParseItem pi = parseRequired(m);
+        if (!pi.isValid()) return new InvalidParseItem();
+        parseValues(m, pi);
+        parsePropagate(m, pi);
+        parseType(m, pi);
+
+        Iterator i = getChildIterator(m);
+        log("Parsing children...");
+        RootParser g = new RootParser(yaml);
+        while(i.hasNext()) {
+            if ((val = i.next()) instanceof Map) {
+                NewParseItem c = g.parse((Map) val);
+                if (!c.isValid()) {
+                    err("Invalid child. Skipping...");
+                    continue;
+                }
+                pi.children.add(c);
+            } else {
+                err("Child expected to be a Map. Skipping...");
+            }
         }
-        return true;
+        return pi;
     }
 
     protected NewParseItem parseRequired(Map m) {
         Object val;
         NewParseItem p;
-        if ((val = m.get("name")) != null) {
+        if ((val = m.get("id")) != null) {
             if (val instanceof Map) {
                 p = createItem((Map) val);
             } else if (val instanceof String) {
                 p = createItem((String) val);
             } else {
-                err("Invalid value for \"name\": " + val);
+                err("Invalid value for \"id\": " + val);
                 return new InvalidParseItem();
             }
         } else {
-            err("Required property \"name\" not found");
+            err("Required property \"id\" not found");
             return new InvalidParseItem();
         }
         return p;
@@ -94,7 +73,7 @@ public class RootParser {
         for (Name.String_Field s : Name.String_Field.values()) {
             String n = s.toString().toLowerCase();
             if (m.containsKey(n) && m.get(n) instanceof String) {
-                String string_name = (String) m.get("name");
+                String string_name = (String) m.get(n);
                 log("Found '" + n + "': " + string_name);
                 name.put(new NameString(string_name), s);
             }

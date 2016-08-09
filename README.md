@@ -271,43 +271,50 @@ Each document can accept the following scalars:
 
 | Scalar                    | Description                         |
 | ------------------------- | ----------------------------------- |
-| [`item`](#item)           |                                  |
-| [`name`](#class)          | Name of the item |                                  |
+| [`child`](#child)         | Container for all children nodes    |
+| [`id`](#id)          | Name of the node |                                  |
 | [`values`](#values)       | Minimum criteria of the hit ratio for each coverage counter       |
 | [`propagate`](#propagate) | Whether the criteria should also be applied to children |
+| [`type`](#type)           | A specifier of the type of the node |
 
-### `package`
-`package` defines the package(s) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the package. If `package` is defined, the values for `class` and `method` will **not** be carried over from the previous document.
+The configuration file is _cascading_. That is, if two nodes can apply to the same object, then the cofiguration of the later node will override the first.
 
-List of allowed mappings:
+### `id`
+`id` is used to specify all accepted identifying properties of the node. In most cases, defining the `name` field is enough to identify a particular object, but in some specific cases more is needed (such as a method that has the same name as another but with different signatures).
 
-| Scalar    | Type      | Description                                               | Default   |
-| --------- | :-------: | --------------------------------------------------------- | :-------: |
-| `name`    | `String`  | Package name _(supports wildcard characters `*` and `?`)_ | undefined |
+Although there are many fields that can be defined with `id`, some are only applicable to nodes of certain types. For example, a node with `id` containing a `superclass` definition but also having a `package` type will not match anything since packages don't have superclasses.
 
-If a `package` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
+All scalars in `id` support wildcard characters `*` and `?`.
 
-### `class`
-`class` defines the class(es) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the class. If `class` is defined, the value for `method` will **not** be carried over from the previous document.
+| Scalar        | Type      | Description        | Default | Applicable Types |
+| ------------- | :-------: | -------------------| :-----: | :------: |
+| `name`        | `String`  | Object name        | `*`     | `any`    |
+| `signature`   | `String`  | Object signature   | `*`     | <ul><li>`class`</li><li>`method`</li></ul> |
+| `superclass`  | `String`  | Object superclass  | `*`     | `class`  |
+| `description` | `String`  | Object description | `*`     | `method` |
 
-List of expected mappings:
+If `id` is mapped to a String, then that String will be interpreted as the value for the `name` scalar.
 
-| Scalar    | Type      | Description                                               | Default   |
-| --------- | :-------: | --------------------------------------------------------- | :-------: |
-| `name`    | `String`  | Class name _(supports wildcard characters `*` and `?`)_   | undefined |
+### `type`
+This scalar specifies the type of object a node should match to. `type` should map to a String.
 
-If a `class` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values.
+The accepted values are:
 
-### `method`
-`method` defines the method(s) to which the coverage criteria should be applied. The scalar expects to be mapped to a sequence of mappings that define various aspects of the method.
+| Name      | Description                                    |
+| --------- | ---------------------------------------------- |
+| `group`   | Matches the node only to [groups](#structure)  |
+| `bundle`  | Matches the node only to [bundles](#structure) |
+| `package` | Matches the node only to packages              |
+| `class`   | Matches the node only to classes               |
+| `method`  | Matches the node only to methods               |
+| `any`     | Matches the node to any type                   |
 
-List of expected mappings:
+By default `type` is mapped to `any`.
 
-| Scalar    | Type      | Description                                               | Default   |
-| --------- | :-------: | --------------------------------------------------------- | :-------: |
-| `name`    | `String`  | Method name _(supports wildcard characters `*` and `?`)_  | undefined |
+### `child`
+`child` acts as a container of all the children of a node. Thus, this scalar maps to a map that represents a node or a list of maps that each represent a different node. A child node acts the same as a top-level node with the exception that this will only match objects whose parent matches the parent node.
 
-If a `method` is instead assigned a String, then it will be interpreted as a package with `name` being that String and all of its other scalars being their default values. 
+The `child` scalar does **not** enforce a node to match if the object has a particular child, but for its children to match only if the object has a particular parent. Thus a node will match an object even if their children do not match.
 
 ### `values`
 
@@ -320,30 +327,18 @@ If a `method` is instead assigned a String, then it will be interpreted as a pac
 | `method`      | `int | float` | Minimum method hit percentage         |
 | `class`       | `int | float` | Minimum class hit percentage          |
 
-### `propagate`
-`propagate` is a boolean value. If `true`, then whatever criteria is applied to the item(s) defined in the document will also be recursively applied to every class/method it contains. By default `propagate` is set to `false`.
+If `values` is mapped to a number, then every scalar `values` can contain will be set to 50. By default `values` is set to `0`.
 
-### `default`
-`default` is used to specify the coverage criteria for each field that should be used if nothing was provided. For example, if the criteria for the "instruction" field in a package was undefined, then it will be set to whatever `default` has for that field. It can either be a number or a dictionary of values. If the former, then that value is applied to every field. By default each field is given a value of `0`.
+### `propagate`
+`propagate` is a boolean value. If `true`, then whatever criteria is applied to an object will also be recursively applied to every child it contains. By default `propagate` is set to `false`.
+
 
 ### Examples
 
-```YAML
-# Set every item in the bundle to have minimum coverage of 50%
-package: {name: "*"}
-values: {instruction: 50, branch: 50, line: 50, complexity: 50, method: 50, class: 50}
-propagate: true
----
-# Alternitavely, it can be written like this
-package: "*"
-values: 50
-propagate: true
----
-# Set class "bar" in package "foo" to have a minimum instruction coverage of 45%
-package: "foo"
-class: "bar"
-values: {instruction: 45}
-propagate: false
+```
+# Require every object in the report to have a minimum coverage of 50%
+values    : 50
+propagate : true
 ```
 
 
