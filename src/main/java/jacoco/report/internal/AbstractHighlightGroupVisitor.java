@@ -62,6 +62,8 @@ public abstract class  AbstractHighlightGroupVisitor implements IReportGroupVisi
                 for (NewParseItem child : p.getChildren()) {
                     child_parse_items.add(child);
                 }
+            } else if (p.isRoot()) {
+                child_parse_items.add(p);
             }
         }
     }

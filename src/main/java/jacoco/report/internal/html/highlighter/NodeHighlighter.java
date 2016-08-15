@@ -32,6 +32,10 @@ public class NodeHighlighter {
                         highlightTotal(child, pi.getChildren(), tree);
                     }
                 }
+            } else if (pi.isRoot()) {
+                Collection<NewParseItem> l = new ArrayList<NewParseItem>(1);
+                l.add(pi);
+                highlightTotal(n, l, tree);
             }
         }
         return getHighlightResults(n);
